@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="icon" type="image/png" href="images/icons/favicon.ico" />
+
+  <title>GBM | Portal Encuestas</title>
+
+  <style type="text/css">
+    @font-face {
+      font-family: MuseoSans-Regular;
+      src: url('fonts/museosans/MuseoSans-100.otf');
+    }
+
+    html {
+      width: auto;
+      height: auto;
+    }
+
+    body {
+      background-color: white;
+    }
+
+    .container {
+      display: grid;
+      justify-content: space-evenly;
+      grid-template-columns: auto;
+      grid-gap: 10px;
+      padding: 10px;
+    }
+
+    .container>div {
+      text-align: center;
+      padding: 20px 0;
+      font-size: 30px;
+    }
+
+    .error-500 {
+      height: 53px;
+      width: 531px;
+    }
+
+    .error-500-vector {
+      height: 331px;
+      width: 386.54px;
+    }
+
+    .no-pudimos-encontrar {
+      height: 31px;
+      width: 620px;
+      color: #ADC0E1;
+      font-family: MuseoSans-Regular;
+      font-size: 26px;
+      line-height: 31px;
+    }
+
+    .si-considera-que-esta {
+      height: 31px;
+      width: 876px;
+      color: #006AB0;
+      font-family: MuseoSans-Regular;
+      font-size: 26px;
+      line-height: 31px;
+    }
+
+    .logo {
+      height: 50px;
+      width: 115px;
+    }
+
+    /* Extra small devices (phones, 600px and down) */
+    @media only screen and (max-width: 600px) {
+      html {
+        width: auto;
+        height: auto;
+      }
+
+      .error-500 {
+        width: 100%;
+        height: auto;
+      }
+
+      .error-500-vector {
+        width: 100%;
+        height: auto;
+      }
+
+      .no-pudimos-encontrar {
+        height: auto;
+        width: 100%;
+        color: #ADC0E1;
+        font-family: MuseoSans-Regular;
+        font-size: 26px;
+        line-height: 31px;
+        text-align: left;
+      }
+
+      .si-considera-que-esta {
+        height: auto;
+        width: 100%;
+        color: #006AB0;
+        font-family: MuseoSans-Regular;
+        font-size: 26px;
+        line-height: 31px;
+      }
+    }
+
+    /* Small devices (portrait tablets and large phones, 600px and up) */
+    @media only screen and (min-width: 600px) {
+      html {
+        width: 99%;
+        height: 99%;
+      }
+    }
+
+    /* Medium devices (landscape tablets, 768px and up) */
+    @media only screen and (min-width: 768px) {
+      html {
+        width: 99%;
+        height: 99%;
+      }
+    }
+
+    /* Large devices (laptops/desktops, 992px and up) */
+    @media only screen and (min-width: 992px) {
+      html {
+        width: 99%;
+        height: 99%;
+      }
+    }
+
+    /* Extra large devices (large laptops and desktops, 1200px and up) */
+    @media only screen and (min-width: 1200px) {
+      html {
+        width: 99%;
+        height: 99%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div>
+      <img class="error-500" src="images/error500.svg">
+    </div>
+    <div class="no-pudimos-encontrar">
+      <p>Ha surgido un error interno, lo sentimos.</p>
+    </div>
+    <div>
+      <img class="error-500-vector" src="images/error500-vector.svg">
+    </div>
+    <div class="no-pudimos-encontrar">
+      <p>
+        Por favor intentelo de nuevo más tarde.
+        <br>
+        Si el problema persiste, comuníquese con
+        <a href="mailto:appmanagement@gbm.net" class="si-considera-que-est">App Managment</a>
+      </p>
+      <br>
+      <img class="logo" src="images/logo.svg">
+    </div>
+  </div>
+
+</body>
+
+</html>

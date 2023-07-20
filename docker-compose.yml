@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+  # MySQL database service up.
+  mysql:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_USER: "root"
+      MYSQL_ROOT_PASSWORD: "4md34dm1n"
+      TZ: America/Panama
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./docker/planning_mrs_db.sql:/docker-entrypoint-initdb.d/planning_mrs_db.sql
+      - ./docker/MIS.sql:/docker-entrypoint-initdb.d/MIS.sql
+      - ./docker/new_position_db.sql:/docker-entrypoint-initdb.d/new_position_db.sql
+      - ./docker/mis_ss.sql:/docker-entrypoint-initdb.d/mis_ss.sql
+      - ./docker/roles_bpm.sql:/docker-entrypoint-initdb.d/roles_bpm.sql
+    networks:
+      - hub-network
+  # Service for database management system in MySQL
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    links:
+      - mysql
+    ports:
+      - 8081:80
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    networks:
+      - hub-network
+
+# Com network for all services
+networks:
+  hub-network:
+    driver: bridge
