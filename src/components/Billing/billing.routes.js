@@ -12,8 +12,9 @@ bl.post("/new-purchase-order",  controller.newPurchaseOrder);
 bl.post("/new-billing",  controller.newBilling); 
 bl.post("/new-delete-order",  controller.newDeleteOrder); 
 bl.post("/to-delete-order",  controller.toDeleteOrder); 
-bl.get("/get-billings",  controller.getBillings); 
+bl.post("/get-billings",  controller.getBillings); 
 bl.post("/get-payment-history",  controller.getPaymentHistory); 
+bl.post("/pay-billing",  controller.payBilling); 
 
 
 

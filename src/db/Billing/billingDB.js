@@ -320,7 +320,7 @@ export default class billingDB {
         try {
 
             query = `INSERT INTO deleteorder ( quantity, active, createdAt, createdBy) 
-            VALUES ( '${total}', '1', CURRENT_TIMESTAMP, '${user}')`;
+            VALUES ( '${total.replace('₡', '').replace(',', '')}', '1', CURRENT_TIMESTAMP, '${user}')`;
 
 
 
@@ -395,7 +395,8 @@ export default class billingDB {
         try {
 
             query = `
-            SELECT * 
+            SELECT paymenthistory.* ,
+            DATE_FORMAT(paymenthistory.createdAt, "%d-%m-%Y %H:%i:%s") createdAtF
 
             FROM paymenthistory
 
@@ -498,47 +499,112 @@ export default class billingDB {
     }
 
     //Obtiene todas las facturas pendientes
-    static getBillingsDB() {
+    static getBillingsDB(startDate, endDate) {
 
         let query = ""
 
         try {
 
             query = `
-                SELECT 
-                billing.idBilling,
-                land.name,
-                enterpriseclient.enterpriseName,
-                partnerenterprisecontact.nameRepresentativePartner,
-                paymentclientway.wayPayment,
-                billing.expirationDays,
-                purchaseorder.idPurchaseOrder,
-                purchaseorder.quantity,
+            SELECT DISTINCT
+            billing.idBilling,
+            land.name,
+            enterpriseclient.enterpriseName,
+            partnerenterprisecontact.nameRepresentativePartner,
+            paymentclientway.wayPayment,
+            billing.expirationDays,
+            purchaseorder.idPurchaseOrder,
+            purchaseorder.quantity,
+
+            (SELECT 
+                CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END
+                as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1) as paymenthistory,
+
+
+           quantity - (
+            SELECT 
+            CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END 
+            as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1) as balance,
+            
+        
+           /*Calcular el vencimiento de una factura*/
+           CASE
+                WHEN 
+                    /*Mayor a 28 días*/
+                    DATEDIFF(NOW(), billing.createdAt) > 28 
+
+                    /*Es de tipo crédito*/
+                    AND paymentclientway.idPaymentClientWay = 1 
+                    
+                    AND /*Cuanto es lo que debe*/
+                    (quantity - 
+                        (SELECT 
+                            CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END
+                            
+                            as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1)) >0 
+        
+        
+            THEN "Vencida"
+            ELSE "Al día"
+            END AS expirationState,
+
+            DATE_FORMAT(billing.createdAt, "%d-%m-%Y") createdAt
+
+
+            FROM billing
+
+            INNER JOIN land
+            ON land.idLand = billing.idLand
+
+            INNER JOIN enterpriseclient
+            ON enterpriseclient.idClient = billing.idClient
+
+            INNER JOIN partnerenterprisecontact
+            ON partnerenterprisecontact.idPartner = billing.idPartner
+
+            INNER JOIN paymentclientway
+            ON paymentclientway.idPaymentClientWay = billing.idPaymentClientWay
+
+            INNER JOIN purchaseorder
+            ON purchaseorder.idPurchaseOrder = billing.idPurchaseOrder
+            
+            LEFT JOIN paymenthistory
+            ON paymenthistory.idBilling = billing.idBilling
+
+
+
+
+            WHERE billing.active=1
                 
-                DATE_FORMAT(billing.createdAt, "%d-%m-%Y") createdAt
+                
+                
+                `;
+
+            //Si vienen dos fechas que haga un rango entre
+            if (startDate != null && endDate != null) {
+
+                query += `
+
+                AND billing.createdAt BETWEEN '${startDate.split('T')[0]}' AND '${endDate.split('T')[0]}'
+                `;
+            }
+            //Si sólo viene la fecha de inicio, que haga una fecha exacta.
+            else if (startDate != null && endDate == null) {
+                // query += `
+                // AND  CAST(billing.createdAt AS date)  = '${startDate.split('T')[0]}' 
+                // `;
+                query += `
+                AND DATE_FORMAT(billing.createdAt, "%Y-%m-%d") = '${startDate.split('T')[0]}' 
+                `;
+            }
 
 
-                FROM billing 
-
-                INNER JOIN land
-                ON land.idLand = billing.idLand
-
-                INNER JOIN enterpriseclient
-                ON enterpriseclient.idClient = billing.idClient
-
-                INNER JOIN partnerenterprisecontact
-                ON partnerenterprisecontact.idPartner = billing.idPartner
-
-                INNER JOIN paymentclientway
-                ON paymentclientway.idPaymentClientWay = billing.idPaymentClientWay
-
-                INNER JOIN purchaseorder
-                ON purchaseorder.idPurchaseOrder = billing.idPurchaseOrder
 
 
-
-
-                WHERE billing.active=1;
+            query += `
+                
+                
+                ORDER BY billing.idBilling DESC;
                 
                 
                 
@@ -568,7 +634,38 @@ export default class billingDB {
 
 
 
+    //Inserta ela purchase order
+    static savePayBillingDB(idBilling, payAmount, user) {
 
+
+        let query = ""
+
+        try {
+            query = `
+                INSERT INTO paymenthistory ( idBilling, amount, active, createdAt, createdBy) 
+                VALUES ( '${idBilling}', '${payAmount}', '1', CURRENT_TIMESTAMP, '${user}');
+                        `
+
+            console.log(query);
+
+            return new Promise((resolve, reject) => {
+                try {
+                    connectionSF.query(query, (error, results) => {
+                        if (error) {
+                            reject(error)
+                        } else {
+                            resolve(results)
+                        }
+                    })
+                } catch (error) {
+                    console.log(error);
+                    reject(error)
+                }
+            })
+
+            //}
+        } catch (e) { console.log(e) }
+    }
 
 
 

@@ -191,7 +191,7 @@ export default class billingController {
 
       const updateStock = await billingDB.updateStockDB(newInfo);
 
-      if (newInfo.advancePayment != '' || true) {
+      if (newInfo.advancePayment != '' ) {
 
         const saveHistoryPayment = await billingDB.saveHistoryPaymentDB(billing.insertId, newInfo, user);
       }
@@ -237,14 +237,14 @@ export default class billingController {
   //funcion insertar nuevo dato maestro
   async getBillings(req, res) {
     // const { type, newInfo, form, user } = req.body
-    // const { form, newInfo, user, total } = req.body
+     const { startDate, endDate } = req.body
 
-    console.log("getBillings")
+     console.log("Dates: ", req.body);
 
 
     try {
 
-      const billings = await billingDB.getBillingsDB();
+      const billings = await billingDB.getBillingsDB(startDate, endDate);
 
       console.log(billings);
 
@@ -299,6 +299,49 @@ export default class billingController {
       });
     }
   }
+
+  //funcion insertar nuevo dato maestro
+  async payBilling(req, res) {
+    // const { type, newInfo, form, user } = req.body
+    const { idBilling, payAmount, user } = req.body
+
+    console.log(req.body)
+
+
+    try {
+      //console.log(req);
+
+      const pay = await billingDB.savePayBillingDB(idBilling, payAmount, user);
+      console.log("pay", pay)
+
+      // if (parseInt(pay.affectedRows) > 0) {
+
+      //   return res.status(404).send({
+      //     status: 404,
+      //     sucess: false,
+      //     message: "No se pudo realizar el pago.",
+      //   });
+      // }
+
+      return res.status(200).send({
+        status: 200,
+        sucess: true,
+        message: "Purchase order creada",
+        payload: {
+          message: "Creada con éxito",
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({
+        status: 500,
+        sucess: false,
+        message: error.sqlMessage,
+      });
+    }
+  }
+
+
 
   //funcion insertar nuevo dato maestro
   async registerProductionProducts(req, res) {
