@@ -59,25 +59,6 @@ function catchErrors() {
 }
 
 function sheduledWorks() {
-  // works.updateSignInformation.stop();
-  // works.generateDonationReport.start();
-  // works.generateMaterialIBaseReport.start();
-  // works.notificationUserContractOnHold.start();
-  // works.escalationUserContractOnHold.start();
-  // works.generateEngineerUserEscaltion.start();
-  // works.generateInventoriesEscaltionNotification.start();
-  // works.generatePlannersEscaltionNotification.start();
-  // works.generateTSSEscaltionNotification.start();
-
-  works.updateSignInformation.stop();
-  works.generateDonationReport.stop();
-  works.generateMaterialIBaseReport.stop();
-  works.notificationUserContractOnHold.stop();
-  works.escalationUserContractOnHold.stop();
-  works.generateEngineerUserEscaltion.stop();
-  works.generateInventoriesEscaltionNotification.stop();
-  works.generatePlannersEscaltionNotification.stop();
-  works.generateTSSEscaltionNotification.stop();
 }
 
 process.env.UPLOAD_PATH = path.join(__dirname, "..", "uploads");
