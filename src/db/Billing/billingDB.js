@@ -138,7 +138,7 @@ export default class billingDB {
 
             newInfo.modalItems.map(product => {
 
-                query = `UPDATE product SET stock= product.stock-${product.quantity} WHERE nameProduct LIKE '${product.product.label}'; 
+                query += `UPDATE product SET stock= product.stock-${product.quantity} WHERE nameProduct LIKE '${product.product.label}'; 
                     
                     `
             })

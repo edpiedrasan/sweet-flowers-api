@@ -40,8 +40,8 @@ export default class masterDataDB {
             }
 
             if (form == "product") {
-                query = `INSERT INTO product (quantityStems, nameProduct, unitaryPrice, idVarietyPlant, active, createdAt, createdBy) 
-                VALUES ( '${newInfo.quantityStems}', '${newInfo.nameProduct}', '${newInfo.unitaryPrice}','${newInfo.idVarietyPlant.value}', '1', CURRENT_TIMESTAMP, '${user}');`
+                query = `INSERT INTO product (quantityStems, nameProduct, unitaryPrice, stock, idVarietyPlant, active, createdAt, createdBy) 
+                VALUES ( '${newInfo.quantityStems}', '${newInfo.nameProduct}', '${newInfo.unitaryPrice}', 0, '${newInfo.idVarietyPlant.value}', '1', CURRENT_TIMESTAMP, '${user}');`
             }
 
 
