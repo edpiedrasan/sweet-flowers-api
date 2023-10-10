@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon --exec babel-node src/index.js",
     "prd": "NODE_OPTIONS='--max-http-header-size=16384' babel-node src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start":"node ."
   },
   "author": "MIS - APP Management",
   "license": "ISC",
