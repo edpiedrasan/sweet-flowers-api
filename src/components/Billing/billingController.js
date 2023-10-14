@@ -1,11 +1,14 @@
 import billingDB from "../../db/Billing/billingDB.js";
 import fetch from "node-fetch";
-import fs from "fs";
 
 import SendMail from "../../helpers/sendEmail.js";
 import sendWhatsAppMessage from "../../helpers/sendWhatsAppMessage.js";
 
 import { renderCandidateEmail } from "../../helpers/renderContent.js";
+
+//SIGNATURE
+import { createCanvas } from "canvas";
+import fs from "fs";
 
 const zip = require("express-zip");
 
@@ -191,7 +194,7 @@ export default class billingController {
 
       const updateStock = await billingDB.updateStockDB(newInfo);
 
-      if (newInfo.advancePayment != '' ) {
+      if (newInfo.advancePayment != '') {
 
         const saveHistoryPayment = await billingDB.saveHistoryPaymentDB(billing.insertId, newInfo, user);
       }
@@ -237,9 +240,9 @@ export default class billingController {
   //funcion insertar nuevo dato maestro
   async getBillings(req, res) {
     // const { type, newInfo, form, user } = req.body
-     const { startDate, endDate } = req.body
+    const { startDate, endDate } = req.body
 
-     console.log("Dates: ", req.body);
+    console.log("Dates: ", req.body);
 
 
     try {
@@ -1420,6 +1423,108 @@ Total: ${quantity} paquetes. `
           message: error.sqlMessage.toString(),
         },
       });
+    }
+  }
+
+
+  async printBilling2(req, res) {
+    try {
+
+      const extention = "2";
+
+      let name = "Edu"
+      var country = "CR";
+      var location = "Forum";
+      let department=""
+
+      const width = 200;
+      const height = 160;
+
+      const canvas = createCanvas(width, height);
+      const context = canvas.getContext("2d");
+      // Establece el fondo blanco
+      context.fillStyle = "#FFFFFF";
+      context.fillRect(0, 0, width, height);
+
+      context.fillStyle = "#006ab3";
+      context.font = "bold 18pt Century Gothic";
+      context.fillText(name, 10, 65);
+      context.font = "16pt bold Century Gothic";
+      context.fillStyle = "black";
+      context.fillText(department, 10, 87);
+      context.fillText(location, 10, 109);
+      let finalCode = "eee";
+
+      context.fillText("Tel: " + country + " Ext: " + extention, 10, 132);
+      context.fillText("Email: " + "epiedra", 10, 152);
+
+
+
+      const buffer = canvas.toBuffer("image/png");
+      fs.writeFileSync(__dirname + "/image.png", buffer);
+      console.log(__dirname);
+      res.download(__dirname + "/image.png");
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async printBilling(req, res) {
+    try {
+
+      const width = 400;
+      const height = 550;
+
+      const canvas = createCanvas(width, height);
+      const context = canvas.getContext("2d");
+
+      // Establece el fondo blanco
+      context.fillStyle = "#FFFFFF";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+  
+      // Título de la factura
+      context.font = "bold 20pt Arial";
+      context.fillStyle = "black";
+      context.fillText("Factura Original", 120, 30);
+  
+      // Información del cliente
+      context.font = "14pt Arial";
+      context.fillText("Cliente:", 10, 70);
+      context.fillText("Los Fellos", 130, 70);
+
+      context.fillText("Nombre:", 10, 100);
+      context.fillText("Ronald Piedra Carballo", 130, 100);
+
+      context.fillText("Fecha:", 10, 130);
+      context.fillText("2023/10/15 10:30:22", 130, 130);
+  
+      // Información del producto
+      context.fillText("Cantidad", 10, 170);
+      context.fillText("Descripción", 150, 170);
+      context.fillText("Total", 300, 170);
+      context.fillText("___________________________________________", 10, 170);
+      // Detalles de los productos (puedes iterar a través de ellos)  //X Y
+      context.fillText("1", 10, 200);
+      context.fillText("Blush 24", 150, 200);
+      context.fillText("₡4500.00", 300, 200);
+  
+      context.fillText("1", 10, 230);
+      context.fillText("Blanca 24", 150, 230);
+      context.fillText("₡4500.00", 300, 230);
+  
+      // Información adicional
+      context.fillText("Total:", 10, 290);
+      context.fillText("₡9000.00", 120, 290);
+      context.fillText("Firma:", 10, 400);
+      context.fillText("___________________________________________", 10, 510);
+
+   let nameRandom = "/Factura n.º "+ Math.floor(Math.random() * 100) + 1+" - Los fellos.png";
+      const buffer = canvas.toBuffer("image/png");
+      fs.writeFileSync(__dirname + nameRandom, buffer);
+      console.log(__dirname);
+      res.download(__dirname + nameRandom);
+    } catch (e) {
+      console.log(e);
     }
   }
 
