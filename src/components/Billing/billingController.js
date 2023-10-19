@@ -9,6 +9,7 @@ import { renderCandidateEmail } from "../../helpers/renderContent.js";
 //SIGNATURE
 import { createCanvas } from "canvas";
 import fs from "fs";
+import { start } from "repl";
 
 const zip = require("express-zip");
 
@@ -225,6 +226,7 @@ export default class billingController {
         message: "Purchase order creada",
         payload: {
           message: "Creada con éxito",
+          billing: billing
         },
       });
     } catch (error) {
@@ -1435,7 +1437,7 @@ Total: ${quantity} paquetes. `
       let name = "Edu"
       var country = "CR";
       var location = "Forum";
-      let department=""
+      let department = ""
 
       const width = 200;
       const height = 160;
@@ -1471,9 +1473,25 @@ Total: ${quantity} paquetes. `
 
   async printBilling(req, res) {
     try {
+      const { idBilling, typeBilling } = req.params;
+
+      const idBillingDecoded = Buffer.from(idBilling, "base64").toString()
+      const typeBillingDecoded = Buffer.from(typeBilling, "base64").toString()
+
+      const title = typeBillingDecoded == "original" ? "Original" : "Copia"
+
+      console.log("idBillingDecoded", idBillingDecoded)
+      console.log("typeBillingDecoded", typeBillingDecoded)
+
+      // let infoBilling = await billingDB.getBillingByIdDB(idBillingDecoded);
+      const infoBillingDB = await billingDB.getBillingByIdDB(idBillingDecoded);
+      let infoBilling = infoBillingDB[0]
+      console.log("INFO FACTIRA", infoBilling)
+
+
 
       const width = 400;
-      const height = 550;
+      const height = 1000;
 
       const canvas = createCanvas(width, height);
       const context = canvas.getContext("2d");
@@ -1481,48 +1499,89 @@ Total: ${quantity} paquetes. `
       // Establece el fondo blanco
       context.fillStyle = "#FFFFFF";
       context.fillRect(0, 0, canvas.width, canvas.height);
-  
+      //XY
       // Título de la factura
       context.font = "bold 20pt Arial";
       context.fillStyle = "black";
-      context.fillText("Factura Original", 120, 30);
-  
+      context.fillText("Factura #" + idBillingDecoded + " - " + title, 90, 30);
+
+
+
+      let generalInformation = [
+        { name: "Cliente:", value: infoBilling.enterpriseName },
+        { name: "Proveedor:", value: "R. Piedra" },
+        { name: "Fecha:", value: infoBilling.createdAt },
+        { name: "Vendedor:", value: infoBilling.createdBy },
+        { name: "Proforma:", value: infoBilling.wayPayment },
+
+      ]
+
+      if (infoBilling.wayPayment != "Contado" /*Crédito*/) {
+        generalInformation = [...generalInformation,
+        { name: "Crédito:", value: infoBilling.creditLimitDays },
+        { name: "Vence:", value: infoBilling.dateToExpirate },
+        ]
+      }
+
+
       // Información del cliente
-      context.font = "14pt Arial";
-      context.fillText("Cliente:", 10, 70);
-      context.fillText("Los Fellos", 130, 70);
+      context.font = "20pt Calibri";
 
-      context.fillText("Nombre:", 10, 100);
-      context.fillText("Ronald Piedra Carballo", 130, 100);
+      let x = 10
+      let y = 150
 
-      context.fillText("Fecha:", 10, 130);
-      context.fillText("2023/10/15 10:30:22", 130, 130);
-  
-      // Información del producto
-      context.fillText("Cantidad", 10, 170);
-      context.fillText("Descripción", 150, 170);
-      context.fillText("Total", 300, 170);
-      context.fillText("___________________________________________", 10, 170);
-      // Detalles de los productos (puedes iterar a través de ellos)  //X Y
-      context.fillText("1", 10, 200);
-      context.fillText("Blush 24", 150, 200);
-      context.fillText("₡4500.00", 300, 200);
-  
-      context.fillText("1", 10, 230);
-      context.fillText("Blanca 24", 150, 230);
-      context.fillText("₡4500.00", 300, 230);
-  
-      // Información adicional
-      context.fillText("Total:", 10, 290);
-      context.fillText("₡9000.00", 120, 290);
-      context.fillText("Firma:", 10, 400);
-      context.fillText("___________________________________________", 10, 510);
+      let spaceHeight = 60;
+      let startIn = 100
 
-   let nameRandom = "/Factura n.º "+ Math.floor(Math.random() * 100) + 1+" - Los fellos.png";
+
+      generalInformation.map(information => {
+        context.fillText(information.name, x, startIn);
+        context.fillText(information.value, y, startIn);
+
+        startIn = startIn + spaceHeight;
+      })
+
+      // // Información del producto
+      context.font = "18pt Calibri";
+      startIn = startIn + 30;
+      context.fillText("Cant", 1, startIn);
+      context.fillText("Descripción", 70, startIn);
+      context.fillText("Precio/U", 230, startIn);
+      context.fillText("Total", 340, startIn);
+      startIn = startIn + 30;
+       context.fillText("___________________________________________", 10, startIn);
+      // // Detalles de los productos (puedes iterar a través de ellos)  //X Y
+      // context.fillText("1", 10, 200);
+      // context.fillText("Blush 24", 150, 200);
+      // context.fillText("₡4500.00", 300, 200);
+
+      // context.fillText("1", 10, 230);
+      // context.fillText("Blanca 24", 150, 230);
+      // context.fillText("₡4500.00", 300, 230);
+
+      // // Información adicional
+    
+      context.font = "20pt Calibri";
+      startIn = startIn + 30;
+
+      context.fillText("Total:", 150, startIn);
+      context.fillText("₡" + infoBilling.quantity + ".00", 250, startIn);
+      startIn = startIn + 120;
+      context.fillText("Firma:", x, startIn);
+      startIn = startIn + 110;
+
+      context.fillText("___________________________________________", 10, startIn);
+
+      // context.fillText("Total:", 10, 290);
+      // context.fillText("₡9000.00", 120, 290);
+      // context.fillText("Firma:", 10, 400);
+      // context.fillText("___________________________________________", 10, 510);
+
+      let nameBilling = "/Factura n.º " + idBillingDecoded + " - " + title + " - " + infoBilling.enterpriseName + ".png";
       const buffer = canvas.toBuffer("image/png");
-      fs.writeFileSync(__dirname + nameRandom, buffer);
+      fs.writeFileSync(__dirname + nameBilling, buffer);
       console.log(__dirname);
-      res.download(__dirname + nameRandom);
+      res.download(__dirname + nameBilling);
     } catch (e) {
       console.log(e);
     }

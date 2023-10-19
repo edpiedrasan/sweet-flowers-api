@@ -15,7 +15,7 @@ bl.post("/to-delete-order",  controller.toDeleteOrder);
 bl.post("/get-billings",  controller.getBillings); 
 bl.post("/get-payment-history",  controller.getPaymentHistory); 
 bl.post("/pay-billing",  controller.payBilling); 
-bl.get("/print-billing",  controller.printBilling); 
+bl.get("/print-billing/:idBilling/:typeBilling",  controller.printBilling); 
 
 
 

@@ -631,6 +631,127 @@ export default class billingDB {
         } catch (e) { console.log(e) }
     }
 
+    //Obtiene la factura por id.
+    static getBillingByIdDB(idBilling) {
+
+        let query = ""
+
+        try {
+
+            query = `
+                SELECT DISTINCT
+                billing.idBilling,
+                land.name,
+                enterpriseclient.enterpriseName,
+                partnerenterprisecontact.nameRepresentativePartner,
+                paymentclientway.wayPayment,
+                billing.expirationDays,
+                purchaseorder.idPurchaseOrder,
+                purchaseorder.quantity,
+                enterpriseclient.creditLimitDays,
+                DATE_FORMAT(DATE_ADD(DATE_FORMAT(billing.createdAt, "%Y-%m-%d %H:%i"), INTERVAL 8 DAY), "%d-%m-%Y %H:%i") AS dateToExpirate,
+    
+                (SELECT 
+                    CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END
+                    as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1) as paymenthistory,
+    
+    
+               quantity - (
+                SELECT 
+                CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END 
+                as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1) as balance,
+                
+            
+               /*Calcular el vencimiento de una factura*/
+               CASE
+                    WHEN 
+                        /*Mayor a 28 días*/
+                        DATEDIFF(NOW(), billing.createdAt) > enterpriseclient.creditLimitDays 
+    
+                        /*Es de tipo crédito*/
+                        AND paymentclientway.idPaymentClientWay = 1 
+                        
+                        AND /*Cuanto es lo que debe*/
+                        (quantity - 
+                            (SELECT 
+                                CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END
+                                
+                                as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1)) >0 
+            
+            
+                THEN "Vencida"
+                ELSE "Al día"
+                END AS expirationState,
+    
+                DATE_FORMAT(billing.createdAt, "%d-%m-%Y %H:%i") AS createdAt,  
+                purchaseorder.createdBy
+  
+    
+                FROM billing
+    
+                INNER JOIN land
+                ON land.idLand = billing.idLand
+    
+                INNER JOIN enterpriseclient
+                ON enterpriseclient.idClient = billing.idClient
+    
+                INNER JOIN partnerenterprisecontact
+                ON partnerenterprisecontact.idPartner = billing.idPartner
+    
+                INNER JOIN paymentclientway
+                ON paymentclientway.idPaymentClientWay = billing.idPaymentClientWay
+    
+                INNER JOIN purchaseorder
+                ON purchaseorder.idPurchaseOrder = billing.idPurchaseOrder
+                
+                LEFT JOIN paymenthistory
+                ON paymenthistory.idBilling = billing.idBilling
+    
+    
+    
+    
+                WHERE billing.active=1
+                AND billing.idBilling=${idBilling}
+                    
+                    
+                    
+                    `;
+
+
+
+
+
+
+            query += `
+                    
+                    
+                    ORDER BY billing.idBilling DESC;
+                    
+                    
+                    
+                    `;
+
+            console.log(query);
+
+            return new Promise((resolve, reject) => {
+                try {
+                    connectionSF.query(query, (error, results) => {
+                        if (error) {
+                            reject(error)
+                        } else {
+                            resolve(results)
+                        }
+                    })
+                } catch (error) {
+                    console.log(error);
+                    reject(error)
+                }
+            })
+
+            //}
+        } catch (e) { console.log(e) }
+    }
+
 
 
 
