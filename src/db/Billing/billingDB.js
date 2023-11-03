@@ -275,12 +275,12 @@ export default class billingDB {
 
         try {
 
-            query = `INSERT INTO itempurchaseorder ( idProduct, idPurchaseOrder, quantity, active, createdAt, createdBy) VALUES`
+            query = `INSERT INTO itempurchaseorder ( idProduct, idPurchaseOrder, quantity, currentUnitaryPrice, active, createdAt, createdBy) VALUES`
 
             newInfo.modalItems.map(item => {
                 // query += `(NULL, '${idMasterData}', '${item.nameRepresentativePartner}', '${item.dni != undefined ? item.dni : ''}', '${item.cellphone}',  CURRENT_TIMESTAMP, '${user}'), `;
 
-                query += `( '${item.product.value}', '${idPurchaseOrder}', '${item.quantity}', '1',  CURRENT_TIMESTAMP, '${user}'), `;
+                query += `( '${item.product.value}', '${idPurchaseOrder}', '${item.quantity}', (SELECT unitaryPrice FROM product WHERE idProduct = ${item.product.value}), '1',  CURRENT_TIMESTAMP, '${user}'), `;
 
             })
             //elimina la ultima coma
@@ -788,6 +788,40 @@ export default class billingDB {
         } catch (e) { console.log(e) }
     }
 
+
+    //Obtiene los productos de una po.
+    static getProductsByPODB(poId) {
+
+        let query = ""
+
+        try {
+
+            query = `
+                SELECT ip.quantity, pr.nameProduct,CONCAT('₡ ', FORMAT(ip.currentUnitaryPrice, 0))  as unitaryPrice , CONCAT('₡ ', FORMAT((ip.currentUnitaryPrice * ip.quantity), 0)) as totalProduct  FROM itempurchaseorder ip, product pr 
+                WHERE ip.idPurchaseOrder = ${poId}
+                AND ip.idProduct= pr.idProduct `;
+
+
+            console.log(query);
+
+            return new Promise((resolve, reject) => {
+                try {
+                    connectionSF.query(query, (error, results) => {
+                        if (error) {
+                            reject(error)
+                        } else {
+                            resolve(results)
+                        }
+                    })
+                } catch (error) {
+                    console.log(error);
+                    reject(error)
+                }
+            })
+
+            //}
+        } catch (e) { console.log(e) }
+    }
 
 
 

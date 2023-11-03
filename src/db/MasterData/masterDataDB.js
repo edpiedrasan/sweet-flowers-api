@@ -35,13 +35,76 @@ export default class masterDataDB {
 
             
             if (form == "varietiesPlants") {
-                query = `INSERT INTO varietyplant ( varietyName, idPlant, originCountry, active, createdAt, createdBy)
-                VALUES ( '${newInfo.varietyName}', '${newInfo.idPlant.value}', '${newInfo.originCountry}', '1', CURRENT_TIMESTAMP, '${user}' );`
+                // query = `INSERT INTO varietyplant ( varietyName, idPlant, originCountry, active, createdAt, createdBy)
+                // VALUES ( '${newInfo.varietyName.charAt(0).toUpperCase() + newInfo.varietyName.slice(1).trim()}', '${newInfo.idPlant.value}', '${newInfo.originCountry.value}', '1', CURRENT_TIMESTAMP, '${user}' );`
+           
+                query = `
+                -- Iniciar una transacción
+                START TRANSACTION;
+                
+                -- Asignar un valor a la variable de cadena
+                SET @buildName = '${newInfo.varietyName.charAt(0).toUpperCase() + newInfo.varietyName.slice(1).trim()}';
+                
+                -- Verificar si la variedad ya existe
+                SELECT COUNT(*) INTO @varietyCount FROM varietyplant WHERE varietyName LIKE @buildName;
+
+                IF @varietyCount = 0 THEN
+                INSERT INTO varietyplant ( varietyName, idPlant, originCountry, active, createdAt, createdBy)
+                VALUES ( @buildName, '${newInfo.idPlant.value}', '${newInfo.originCountry.value}', '1', CURRENT_TIMESTAMP, '${user}' );
+                END IF;
+
+                -- Confirmar la transacción
+                COMMIT;`
+
+                // SET @buildName := '${newInfo.varietyName.charAt(0).toUpperCase() + newInfo.varietyName.slice(1).trim()}'
+               
+                // -- Verificar si la variedad ya existe
+                // SELECT COUNT(*) INTO @varietyCount FROM varietyplant WHERE varietyName LIKE '%freEdom%';
+
+                // -- Si la variedad no existe, realizar la inserción
+                // IF @varietyCount = 0 THEN
+                // INSERT INTO varietyplant ( varietyName, idPlant, originCountry, active, createdAt, createdBy)
+                // VALUES ( @buildName, '${newInfo.idPlant.value}', '${newInfo.originCountry.value}', '1', CURRENT_TIMESTAMP, '${user}' );
+                // END IF;
             }
 
             if (form == "product") {
-                query = `INSERT INTO product (quantityStems, nameProduct, unitaryPrice, stock, idVarietyPlant, active, createdAt, createdBy) 
-                VALUES ( '${newInfo.quantityStems}', '${newInfo.nameProduct}', '${newInfo.unitaryPrice}', 0, '${newInfo.idVarietyPlant.value}', '1', CURRENT_TIMESTAMP, '${user}');`
+
+                query = `
+                -- Iniciar una transacción
+                START TRANSACTION;
+
+                -- Declarar variables.
+                SET @buildName :=
+                
+                (select CONCAT( vp.varietyName, " " , pq.key, "/${newInfo.quantityStems.label}" ) as result
+                from varietyplant vp, productQuality pq
+                WHERE vp.idVarietyPlant = ${newInfo.idVarietyPlant.value}
+                AND pq.id=${newInfo.idProductQuality.value});
+
+                -- Verificar si el producto ya existe
+                SELECT COUNT(*) INTO @productCount FROM product WHERE nameProduct = @buildName;
+
+                -- Si el producto no existe, realizar la inserción
+                IF @productCount = 0 THEN
+                    INSERT INTO product (quantityStems, nameProduct, unitaryPrice, stock, idVarietyPlant, active, createdAt, createdBy) 
+                    VALUES ('${newInfo.quantityStems.label}',
+
+                        @buildName,
+
+                            '${newInfo.unitaryPrice}',
+                            0,
+                            '${newInfo.idVarietyPlant.value}',
+                            '1',
+                            CURRENT_TIMESTAMP,
+                            'EPIEDRA');
+                END IF;
+
+                -- Confirmar la transacción
+                COMMIT; `
+            
+            
+            
             }
 
 

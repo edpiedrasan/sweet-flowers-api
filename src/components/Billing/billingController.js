@@ -1488,6 +1488,9 @@ Total: ${quantity} paquetes. `
       let infoBilling = infoBillingDB[0]
       console.log("INFO FACTIRA", infoBilling)
 
+      const productsByPo= await billingDB.getProductsByPODB(infoBilling.idPurchaseOrder);
+      console.log("PRODUCTS", productsByPo)
+
 
 
       const width = 400;
@@ -1541,16 +1544,26 @@ Total: ${quantity} paquetes. `
         startIn = startIn + spaceHeight;
       })
 
-      // // Información del producto
+      // Encabezados del producto
       context.font = "18pt Calibri";
       startIn = startIn + 30;
-      context.fillText("Cant", 1, startIn);
-      context.fillText("Descripción", 70, startIn);
-      context.fillText("Precio/U", 230, startIn);
-      context.fillText("Total", 340, startIn);
+      context.fillText("Ct", 1, startIn);
+      context.fillText("Descripción", 30, startIn);
+      context.fillText("Precio/U", 195, startIn);
+      context.fillText("Total", 300, startIn);
       startIn = startIn + 30;
        context.fillText("___________________________________________", 10, startIn);
-      // // Detalles de los productos (puedes iterar a través de ellos)  //X Y
+
+      productsByPo.map(product =>{
+        //Cada producto.
+        context.font = "18pt Calibri";
+        startIn = startIn + 30;
+        context.fillText(product.quantity, 1, startIn);
+        context.fillText(product.nameProduct, 30, startIn);
+        context.fillText(product.unitaryPrice, 195, startIn);
+        context.fillText(product.totalProduct, 290, startIn);
+        startIn = startIn + 30;
+      })
       // context.fillText("1", 10, 200);
       // context.fillText("Blush 24", 150, 200);
       // context.fillText("₡4500.00", 300, 200);

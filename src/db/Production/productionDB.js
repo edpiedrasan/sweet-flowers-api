@@ -6,15 +6,11 @@ export default class productionDB {
 
     //Inserta el nuevo dato maestro de la compañía
     static dayProductionRegisterDB(newInfo, user, land) {
-        // console.log(newInfo)
-
-
-
         let query = ""
 
         try {
             query = `INSERT INTO dayproductionregister ( idLand, active, createdAt, createdBy) 
-            VALUES ( '${land}', '1', ${newInfo.productionDate != undefined ? `'` + newInfo.productionDate.replace('T', ' ') + `'` : `CURRENT_TIMESTAMP`}, '${user}');`
+            VALUES ( '${land}', '1', ${newInfo.productionDate != "" ? `'` + newInfo.productionDate.replace('T', ' ') + `'` : `CURRENT_TIMESTAMP`}, '${user}');`
 
 
             console.log(query);
