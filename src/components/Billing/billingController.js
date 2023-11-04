@@ -1488,107 +1488,229 @@ Total: ${quantity} paquetes. `
       let infoBilling = infoBillingDB[0]
       console.log("INFO FACTIRA", infoBilling)
 
-      const productsByPo= await billingDB.getProductsByPODB(infoBilling.idPurchaseOrder);
+      const productsByPo = await billingDB.getProductsByPODB(infoBilling.idPurchaseOrder);
       console.log("PRODUCTS", productsByPo)
 
+      //#region Funciones locales.
+      function formatNumberWithCommas(number) {
+        // Verifica si el número es un número válido
+        // if (isNaN(number)) {
+        //   return "Número inválido";
+        // }
+
+        // Convierte el número a una cadena y divide la parte entera y decimal
+        const partes = number.toString().split(".");
+        const parteEntera = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        const parteDecimal = partes[1] || "";
+
+        // Combina la parte entera y decimal con un punto como separador decimal
+        return parteDecimal ? parteEntera + "." + parteDecimal : parteEntera;
+      }
+
+      const getCode = (name) => {
+        const regex = /[A-Z]\/\d+/;
+
+        const match = name.match(regex);
+        if (match) {
+          const result = match[0]; // Obtén la coincidencia completa
+          // console.log(result); // "M/12"
+          return result
+        }
+        return ""
+      }
+
+      //#endregion
 
 
       const width = 400;
-      const height = 1000;
+      let height = 0;
 
-      const canvas = createCanvas(width, height);
-      const context = canvas.getContext("2d");
+      let canvas = createCanvas(width, height);
+      let context = canvas.getContext("2d");
 
-      // Establece el fondo blanco
-      context.fillStyle = "#FFFFFF";
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      //XY
-      // Título de la factura
-      context.font = "bold 20pt Arial";
-      context.fillStyle = "black";
-      context.fillText("Factura #" + idBillingDecoded + " - " + title, 90, 30);
+      //Método interno para poder ejecutar varias veces el dibujo.
+      const buildPicture = (canvas, context, height) => {
 
 
+        // Ajusta la altura del canvas según la altura total del contenido
+        canvas.height = height;
 
-      let generalInformation = [
-        { name: "Cliente:", value: infoBilling.enterpriseName },
-        { name: "Proveedor:", value: "R. Piedra" },
-        { name: "Fecha:", value: infoBilling.createdAt },
-        { name: "Vendedor:", value: infoBilling.createdBy },
-        { name: "Proforma:", value: infoBilling.wayPayment },
 
-      ]
+        // Borra el contenido previamente dibujado
+        context.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (infoBilling.wayPayment != "Contado" /*Crédito*/) {
-        generalInformation = [...generalInformation,
-        { name: "Crédito:", value: infoBilling.creditLimitDays },
-        { name: "Vence:", value: infoBilling.dateToExpirate },
+
+
+        // Establece el fondo blanco
+        context.fillStyle = "#FFFFFF";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        //XY
+        // Título de la factura
+        context.font = "bold 20pt Arial";
+        context.fillStyle = "black";
+        context.fillText("Factura #" + idBillingDecoded + " - " + title, 90, 30);
+
+
+
+        let generalInformation = [
+          { name: "Cliente:", value: infoBilling.enterpriseName },
+          { name: "Proveedor:", value: "R. Piedra" },
+          { name: "Fecha:", value: infoBilling.createdAt },
+          { name: "Vendedor:", value: infoBilling.createdBy },
+          { name: "Proforma:", value: infoBilling.wayPayment },
+
         ]
-      }
+
+        if (infoBilling.wayPayment != "Contado" /*Crédito*/) {
+          generalInformation = [...generalInformation,
+          { name: "Crédito:", value: infoBilling.creditLimitDays + " día(s)" },
+          { name: "Vence:", value: infoBilling.dateToExpirate },
+          ]
+        }
 
 
-      // Información del cliente
-      context.font = "20pt Calibri";
+        // Información del cliente
+        context.font = "20pt Calibri";
 
-      let x = 10
-      let y = 150
+        let x = 10
+        let y = 150
 
-      let spaceHeight = 60;
-      let startIn = 100
+        let spaceHeight = 60;
+        let startIn = 100
 
 
-      generalInformation.map(information => {
-        context.fillText(information.name, x, startIn);
-        context.fillText(information.value, y, startIn);
+        generalInformation.map(information => {
+          context.fillText(information.name, x, startIn);
+          context.fillText(information.value, y, startIn);
 
-        startIn = startIn + spaceHeight;
-      })
+          startIn = startIn + 40;
+        })
 
-      // Encabezados del producto
-      context.font = "18pt Calibri";
-      startIn = startIn + 30;
-      context.fillText("Ct", 1, startIn);
-      context.fillText("Descripción", 30, startIn);
-      context.fillText("Precio/U", 195, startIn);
-      context.fillText("Total", 300, startIn);
-      startIn = startIn + 30;
-       context.fillText("___________________________________________", 10, startIn);
-
-      productsByPo.map(product =>{
-        //Cada producto.
+        // Encabezados del producto
         context.font = "18pt Calibri";
         startIn = startIn + 30;
-        context.fillText(product.quantity, 1, startIn);
-        context.fillText(product.nameProduct, 30, startIn);
-        context.fillText(product.unitaryPrice, 195, startIn);
-        context.fillText(product.totalProduct, 290, startIn);
+        context.fillText("Ct", 1, startIn);
+        context.fillText("Descripción", 40, startIn);
+        context.fillText("Precio/U", 195, startIn);
+        context.fillText("Total", 315, startIn);
         startIn = startIn + 30;
-      })
-      // context.fillText("1", 10, 200);
-      // context.fillText("Blush 24", 150, 200);
-      // context.fillText("₡4500.00", 300, 200);
+        context.fillText("___________________________________________", 1, startIn);
 
-      // context.fillText("1", 10, 230);
-      // context.fillText("Blanca 24", 150, 230);
-      // context.fillText("₡4500.00", 300, 230);
+        startIn = startIn + 20;
 
-      // // Información adicional
-    
-      context.font = "20pt Calibri";
-      startIn = startIn + 30;
+        productsByPo.map(product => {
+          //Cada producto.
+          context.font = "18pt Calibri";
+          startIn = startIn + 30;
+          context.fillText(product.quantity, 1, startIn);
+          context.fillText(product.nameProduct, 40, startIn);
+          context.fillText(product.unitaryPrice, 200, startIn);
+          context.fillText(product.totalProduct, 290, startIn);
+          startIn = startIn + 30;
+        })
 
-      context.fillText("Total:", 150, startIn);
-      context.fillText("₡" + infoBilling.quantity + ".00", 250, startIn);
-      startIn = startIn + 120;
-      context.fillText("Firma:", x, startIn);
-      startIn = startIn + 110;
 
-      context.fillText("___________________________________________", 10, startIn);
+        context.font = "25pt Calibri";
+        startIn = startIn + 50;
 
-      // context.fillText("Total:", 10, 290);
-      // context.fillText("₡9000.00", 120, 290);
-      // context.fillText("Firma:", 10, 400);
-      // context.fillText("___________________________________________", 10, 510);
+        context.fillText("Total:", 1, startIn);
+         context.fillText("₡" + formatNumberWithCommas(infoBilling.quantity), 100, startIn);
+
+
+        console.log("PO", productsByPo)
+
+
+        context.font = "20pt Calibri";
+        startIn = startIn + 80;
+        context.fillText("Firma:", x, startIn);
+        startIn = startIn + 110;
+
+        context.fillText("___________________________________________", 10, startIn);
+
+        startIn = startIn + 50;
+
+        //#region Build la lista de entrega
+
+        let codesFounded = []
+        //Crea un arreglo con los códigos. Ej: ["A/24", "M/12"]
+        productsByPo.map(product => {
+          if (!codesFounded.includes(getCode(product.nameProduct))) {
+            codesFounded = [...codesFounded, getCode(product.nameProduct)]
+          }
+        })
+
+        // Definir el orden personalizado
+        const defineOrder = { 'P': 2, 'M': 1, 'A': 0 };
+        codesFounded = codesFounded.sort((a, b) => defineOrder[a[0]] - defineOrder[b[0]]);
+
+        let quantityByCode = [];
+        let totalProducts = 0
+
+        //Realiza un recorrido en cada code y verifica cuantos productos tiene ese code.
+        codesFounded.map(code => {
+          let quantity = 0;
+
+          productsByPo.map(product => {
+
+            if (getCode(product.nameProduct) == code) {
+              quantity += product.quantity
+            }
+          })
+
+          quantityByCode = [
+            ...quantityByCode,
+            {
+              code: code,
+              quantity: quantity
+            }]
+
+          totalProducts += quantity;
+
+
+        })
+
+        //#endregion
+
+
+        //#region Pintar la lista de entrega
+        startIn = startIn + 50;
+
+        context.fillText("Lista de entrega:", 2, startIn);
+        startIn = startIn + 50;
+
+        quantityByCode.map(delivery => {
+
+          //Cada delivery.
+          context.font = "18pt Calibri";
+
+          context.fillText(delivery.code + ": ", 1, startIn);
+          context.fillText(delivery.quantity + " paquete(s).", 70, startIn);
+          startIn = startIn + 30;
+
+        })
+
+        startIn = startIn + 30;
+        context.fillText("Total: ", 1, startIn);
+        context.fillText(totalProducts + " paquete(s).", 70, startIn);
+        startIn = startIn + 90;
+        //#endregion
+
+
+        return startIn;
+
+
+
+      }
+
+      //Calcula el height final.
+      height = buildPicture(canvas, context, height);
+
+
+      //Rebuild con el nuevo height.
+      buildPicture(canvas, context, height);
+
+
+
 
       let nameBilling = "/Factura n.º " + idBillingDecoded + " - " + title + " - " + infoBilling.enterpriseName + ".png";
       const buffer = canvas.toBuffer("image/png");

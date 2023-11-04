@@ -225,7 +225,7 @@ export default class billingDB {
             query = `SELECT * FROM employee`
 
             query = `INSERT INTO purchaseorder ( idClient, status, quantity, active, createdAt, createdBy) 
-            VALUES ( '${newInfo.enterpriseclient.value}', '2', '${total.replace("₡", "").replace(",", "")}', '1', current_timestamp(), '${user}');`
+            VALUES ( '${newInfo.enterpriseclient.value}', '2', '${total.replace("₡", "").replace(/,/g, "")}', '1', current_timestamp(), '${user}');`
 
 
 
