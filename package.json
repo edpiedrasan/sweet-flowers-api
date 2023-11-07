@@ -11,6 +11,9 @@
   },
   "author": "Eduardo Piedra Sanabria",
   "license": "ISC",
+  "engines": {
+    "node": "14.18.2"  
+  },
   "dependencies": {
     "archiver": "^5.3.0",
     "atob": "^2.1.2",

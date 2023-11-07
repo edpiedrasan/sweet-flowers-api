@@ -10,7 +10,7 @@ export default {
 
   APP: process.env.APP || "PRD",
   // PORT: process.env.PORT || "43888", // 43888
-  PORT: process.env.PORT || 8080, // 43888
+  PORT: process.env.PORT || 43888, // 43888
 
   // Nodemailer Credenciales para el envio de correos
   NM_EMAIL: process.env.NM_EMAIL || "Scom",
