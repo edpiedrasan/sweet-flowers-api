@@ -45,8 +45,8 @@ export default {
   CG_USER: process.env.CG_USER || "",
   CG_PASSWORD: process.env.CG_PASSWORD || "",
 
-  JWT_ENCRYPTION: process.env.JWT_ENCRYPTION || "",
-  JWT_EXPIRATION: process.env.JWT_EXPIRATION || "",
+  JWT_ENCRYPTION: process.env.JWT_ENCRYPTION || "U21hcnRBbmRTaW1wbGUyMDE5",
+  JWT_EXPIRATION: process.env.JWT_EXPIRATION || "1d",
 
   // Usuario Para uso de servicios SOAP
   SW_USERNAME: process.env.SW_USERNAME || "",

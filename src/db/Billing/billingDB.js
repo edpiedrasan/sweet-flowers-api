@@ -823,6 +823,45 @@ export default class billingDB {
         } catch (e) { console.log(e) }
     }
 
+    //Obtiene los productos de una po.
+    static getProductsByBillingDB(billingId) {
+
+        let query = ""
+
+        try {
+
+            query = `
+                SELECT ip.quantity, pr.nameProduct,CONCAT('₡ ', FORMAT(ip.currentUnitaryPrice, 0))  as unitaryPrice , CONCAT('₡ ', FORMAT((ip.currentUnitaryPrice * ip.quantity), 0)) as totalProduct  
+  
+  
+                FROM itempurchaseorder ip, product pr, purchaseorder po, billing bi
+                WHERE ip.idPurchaseOrder = po.idPurchaseOrder
+                AND bi.idPurchaseOrder = po.idPurchaseOrder
+                AND bi.idBilling=${billingId}
+                AND ip.idProduct= pr.idProduct `;
+
+
+            console.log(query);
+
+            return new Promise((resolve, reject) => {
+                try {
+                    connectionSF.query(query, (error, results) => {
+                        if (error) {
+                            reject(error)
+                        } else {
+                            resolve(results)
+                        }
+                    })
+                } catch (error) {
+                    console.log(error);
+                    reject(error)
+                }
+            })
+
+            //}
+        } catch (e) { console.log(e) }
+    }
+
 
 
 

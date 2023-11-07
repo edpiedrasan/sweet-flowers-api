@@ -9,6 +9,8 @@ import { renderCandidateEmail } from "../../helpers/renderContent.js";
 //SIGNATURE
 import { createCanvas } from "canvas";
 import fs from "fs";
+const path = require('path');
+
 import { start } from "repl";
 
 const zip = require("express-zip");
@@ -1614,7 +1616,7 @@ Total: ${quantity} paquetes. `
         startIn = startIn + 50;
 
         context.fillText("Total:", 1, startIn);
-         context.fillText("₡" + formatNumberWithCommas(infoBilling.quantity), 100, startIn);
+        context.fillText("₡" + formatNumberWithCommas(infoBilling.quantity), 100, startIn);
 
 
         console.log("PO", productsByPo)
@@ -1716,9 +1718,65 @@ Total: ${quantity} paquetes. `
       const buffer = canvas.toBuffer("image/png");
       fs.writeFileSync(__dirname + nameBilling, buffer);
       console.log(__dirname);
-      res.download(__dirname + nameBilling);
+      // res.download(__dirname + nameBilling);
+
+      // Ruta del archivo a descargar
+      const filePath = path.join(__dirname, nameBilling);
+
+      // Realizar la descarga
+      res.download(filePath, (err) => {
+        if (err) {
+          // Manejar errores de descarga, si es necesario
+          console.error('Error al descargar el archivo:', err);
+          // res.status(500).send('Error al descargar el archivo');
+        } else {
+          // Borrar el archivo después de la descarga
+          fs.unlink(filePath, (err) => {
+            if (err) {
+              // Manejar errores de eliminación, si es necesario
+              console.error('Error al borrar el archivo:', err);
+            } else {
+              console.log('Archivo eliminado con éxito:', filePath);
+            }
+          });
+        }
+      });
+
     } catch (e) {
       console.log(e);
+    }
+  }
+
+  //Extraer el historial de pagos de una factura
+  async getBillingDetails(req, res) {
+    // const { type, newInfo, form, user } = req.body
+    // const { form, newInfo, user, total } = req.body
+
+    const { idBilling } = req.body
+
+
+    try {
+
+      const detailBilling = await billingDB.getProductsByBillingDB(idBilling);
+
+      console.log(detailBilling);
+
+
+      return res.status(200).send({
+        status: 200,
+        sucess: true,
+        payload: {
+          message: "se cargo exitosamente.",
+          detailBilling
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({
+        status: 500,
+        sucess: false,
+        message: error.sqlMessage,
+      });
     }
   }
 
