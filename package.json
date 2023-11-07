@@ -1,15 +1,15 @@
 {
-  "name": "gbm-hub-api",
+  "name": "sweet-flowers-api",
   "version": "1.0.0",
-  "description": "GBM Corporation",
+  "description": "Flow Flowers Corporation",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --exec babel-node src/index.js",
     "prd": "NODE_OPTIONS='--max-http-header-size=16384' babel-node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start":"node ."
+    "start":"node index.js"
   },
-  "author": "MIS - APP Management",
+  "author": "Eduardo Piedra Sanabria",
   "license": "ISC",
   "dependencies": {
     "archiver": "^5.3.0",

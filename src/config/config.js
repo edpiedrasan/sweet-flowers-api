@@ -9,7 +9,8 @@ export default {
   // PORT: process.env.PORT || "43888", // 43888
 
   APP: process.env.APP || "PRD",
-  PORT: process.env.PORT || "43888", // 43888
+  // PORT: process.env.PORT || "43888", // 43888
+  PORT: process.env.PORT || 8080, // 43888
 
   // Nodemailer Credenciales para el envio de correos
   NM_EMAIL: process.env.NM_EMAIL || "Scom",
@@ -19,8 +20,8 @@ export default {
   DB2_PROTOCOL: process.env.DB2_PROTOCOL || "TCPIP",
 
   // Database Connection
-  DB_HOST: process.env.DB_HOST || "localhost",
-  DB_PASSWORD: process.env.DB_PASSWORD || "",
+  DB_HOST: process.env.DB_HOST || "FlowFlowers",
+  DB_PASSWORD: process.env.DB_PASSWORD || "Vhnfod24",
   DB_PORT: process.env.DB_PORT || "3306",
   DB_USER: process.env.DB_USER || "root",
 
