@@ -7,12 +7,18 @@
     "dev": "nodemon --exec babel-node src/index.js",
     "prd": "NODE_OPTIONS='--max-http-header-size=16384' babel-node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --exec babel-node src/index.js"
+    "start": "NODE_OPTIONS='--max-http-header-size=16384' babel-node src/index.js"
   },
   "author": "Eduardo Piedra Sanabria",
   "license": "ISC",
   "engines": {
-    "node": "14.18.2"
+    "node": "14.18.2",
+    "@babel/core": "^7.23.2",
+    "@babel/node": "^7.22.19",
+    "@babel/preset-env": "^7.23.2",
+    "eslint": "^8.1.0",
+    "multer": "^1.4.2",
+    "nodemon": "^2.0.19"
   },
   "dependencies": {
     "archiver": "^5.3.0",

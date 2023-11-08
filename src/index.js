@@ -2,7 +2,7 @@
 import app from "./app";
 import config from "./config/config";
 //const fs = require("fs");
-//const https = require("https");
+const https = require("https");
 
 const { PORT } = config;
 
@@ -27,16 +27,16 @@ const { PORT } = config;
 
 
 
-app.listen(PORT, (err) => {
+// app.listen(PORT, (err) => {
+//   if (err) {
+//     return console.log(err);
+//   }
+//   console.log(`Application Running on: ${PORT}`);
+// });
+
+https.createServer( app).listen(PORT, (err) => {
   if (err) {
     return console.log(err);
   }
   console.log(`Application Running on: ${PORT}`);
 });
-
-//https.createServer(options, app).listen(PORT, (err) => {
-  //if (err) {
-    //return console.log(err);
-  //}
-  //console.log(`Application Running on: ${PORT}`);
-//});
