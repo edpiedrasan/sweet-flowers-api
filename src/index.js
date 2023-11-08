@@ -27,16 +27,16 @@ const { PORT } = config;
 
 
 
-// app.listen(PORT, (err) => {
-//   if (err) {
-//     return console.log(err);
-//   }
-//   console.log(`Application Running on: ${PORT}`);
-// });
-
-https.createServer( app).listen(PORT, (err) => {
+app.listen(PORT, (err) => {
   if (err) {
     return console.log(err);
   }
   console.log(`Application Running on: ${PORT}`);
 });
+
+// https.createServer( app).listen(PORT, (err) => {
+//   if (err) {
+//     return console.log(err);
+//   }
+//   console.log(`Application Running on: ${PORT}`);
+// });
