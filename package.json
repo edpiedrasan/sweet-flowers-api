@@ -7,7 +7,7 @@
     "dev": "nodemon --exec babel-node src/index.js",
     "prd": "NODE_OPTIONS='--max-http-header-size=16384' babel-node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start":"node src/index.js"
+    "start": "NODE_OPTIONS='--max-http-header-size=16384' babel-node src/index.js"
   },
   "author": "Eduardo Piedra Sanabria",
   "license": "ISC",
