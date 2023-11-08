@@ -4,7 +4,7 @@
   "description": "Flow Flowers Corporation",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon  src/index.js",
+    "dev": "nodemon --exec babel-node  src/index.js",
     "prd": "NODE_OPTIONS='--max-http-header-size=16384' babel-node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon --exec babel-node src/index.js"
