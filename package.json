@@ -23,6 +23,7 @@
   "dependencies": {
     "archiver": "^5.3.0",
     "atob": "^2.1.2",
+    "babel-node": "0.0.1-security",
     "base64-img": "^1.0.1",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.18.3",
