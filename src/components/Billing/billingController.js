@@ -242,7 +242,7 @@ export default class billingController {
   }
 
   //funcion insertar nuevo dato maestro
-  async getBillings(req, res) {
+  async getBillingsbc(req, res) {
     // const { type, newInfo, form, user } = req.body
     const { startDate, endDate } = req.body
 
@@ -273,6 +273,40 @@ export default class billingController {
       });
     }
   }
+
+    //funcion insertar nuevo dato maestro
+    async getBillings(req, res) {
+      // const { type, newInfo, form, user } = req.body
+      // const { startDate, endDate } = req.body
+  
+      // console.log("Dates: ", req.body);
+  
+  
+      try {
+  
+        // const billings = await billingDB.getBillingsDB(startDate, endDate);
+  
+        // console.log(billings);
+  
+  
+        return res.status(200).send({
+          status: 200,
+          sucess: true,
+          payload: {
+            message: "se cargo exitosamente.",
+            bill:"hola"
+          },
+        });
+      } catch (error) {
+        console.log(error);
+        return res.status(500).send({
+          status: 500,
+          sucess: false,
+          message: error.sqlMessage,
+        });
+      }
+    }
+  
 
   //Extraer el historial de pagos de una factura
   async getPaymentHistory(req, res) {
