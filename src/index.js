@@ -23,12 +23,22 @@ const filePathNgrok = '../sweet-flowers-front/src/api/config.json';//path.join(_
 const fs = require('fs');
 
 const { exec } = require('child_process');
+const isWindows = process.platform === 'win32';
 
 //Función para levantar la url de ngrok
 const openNgrok = () => {
 
 
-  const ngrokProcess = exec(`../ngrok start --all`);
+  let ngrokProcess = null;
+  if (isWindows) {
+
+    const ngrokPath = path.resolve(__dirname, 'ngrok.exe'); // Ruta absoluta del ejecutable
+    ngrokProcess = exec(`"${ngrokPath}" start --all`, { windowsHide: false });
+
+  } else {
+    ngrokProcess = exec(`../ngrok start --all`);
+  }
+
 
 
   ngrokProcess.stdout.on('data', (data) => {
@@ -45,7 +55,6 @@ const openNgrok = () => {
     console.log(`child process exited with code ${code}`);
   });
 
-  console.log("Servicio de Ngrok levantado.");
 }
 
 // Función para obtener información sobre los túneles de ngrok
@@ -69,11 +78,16 @@ const getNgrokTunnels = () => {
 
         let apiRoute = parsedData.tunnels.filter(tunnel => tunnel.name == "api")[0].public_url
         let frontRoute = parsedData.tunnels.filter(tunnel => tunnel.name == "front")[0].public_url
-        console.log("FRONT", frontRoute);
+        let frontLocal= getIpAddress() + ":3000";
+        console.log("Front: ", frontRoute);
+        console.log("Front local: ", frontRoute);
+        console.log("Api: ", apiRoute);
 
-        sendWhatsAppMessage("60149039", 'Fuera de la casa: ' + frontRoute);
-        sendWhatsAppMessage("60149039", 'En de la casa: ' );
-        sendWhatsAppMessage("60149039",  getIpAddress()+":3000");
+        
+
+        sendWhatsAppMessage('60149039', 'Fuera de la casa: ' + frontRoute);
+        sendWhatsAppMessage('60149039', 'En de la casa: ');
+        sendWhatsAppMessage('60149039', frontLocal);
 
 
         // console.log("Ruta del API: " + apiRoute);
@@ -84,7 +98,7 @@ const getNgrokTunnels = () => {
         console.error('Error al procesar la información de los túneles:', error);
       }
     });
-  }); 
+  });
 
   request.on('error', (error) => {
     console.error('Error al obtener información de los túneles:', error);
@@ -134,7 +148,9 @@ const modifyJson = (route) => {
 //Función para realizar todo el proceso Ngrok.
 const setNgrok = () => {
   // Matar proceso de ngrok si está activo
-  exec('pkill ngrok', (error, stdout, stderr) => {
+  const ngrokStopCommand = isWindows ? 'taskkill /F /IM ngrok.exe' : 'pkill ngrok';
+
+  exec(ngrokStopCommand, (error, stdout, stderr) => {
     if (error) {
       console.error(`Error al detener ngrok: ${stderr}`);
     }
@@ -143,11 +159,11 @@ const setNgrok = () => {
     openNgrok();
 
 
-    console.log("Esperando 10 segundos para obtener información de los Ngrok tunnels...");
+     console.log("Waiting 10 seconds...");
     setTimeout(() => {
       console.log('Estableciendo los Ngrok Tunnels.');
       getNgrokTunnels();
-    }, 10000); 
+    }, 10000);
 
   });
 
@@ -155,44 +171,46 @@ const setNgrok = () => {
 
 
 //Función para enviar mensajes de WhatsApp através de Twillio.
-const sendWhatsAppMessage =(number, message) => {
-  const accountSid = 'AC15d6adba7e5e22907b1dc6baa02512cf';
-  const authToken = '07e5a0f4e53731ff66c4460c3899748c';
-  const client = require('twilio')(accountSid, authToken);
+const sendWhatsAppMessage = (number, message) => {
 
-let ms='our appointment is coming up on July 21 at 3PM';
+  setTimeout(() => {
+    const accountSid = 'AC15d6adba7e5e22907b1dc6baa02512cf';
+    const authToken = '07e5a0f4e53731ff66c4460c3899748c';
+    const client = require('twilio')(accountSid, authToken);
 
-console.log(message)
-client.messages
-.create({
-  body: '' + message,
-  from: 'whatsapp:+14155238886',
-  to: 'whatsapp:+50660149039'
-})
-  .then(message => console.log(message.sid))
-  .catch(err => console.error(err));
+    // console.log(message)
+    client.messages
+      .create({
+        body: '' + message,
+        from: 'whatsapp:+14155238886',
+        to: 'whatsapp:+506'+ number
+      })
+      .then(message => console.log(message.sid))
+      .catch(err => console.error(err));
+
+  }, 2000);
 }
 
 const getIpAddress = () => {
 
   const os = require('os');
 
-// Obtiene todas las interfaces de red
-const interfaces = os.networkInterfaces();
+  // Obtiene todas las interfaces de red
+  const interfaces = os.networkInterfaces();
 
-// Itera sobre cada interfaz para encontrar la dirección IP no interna (no 127.0.0.1)
-let ipAddress = '';
-Object.keys(interfaces).forEach((iface) => {
+  // Itera sobre cada interfaz para encontrar la dirección IP no interna (no 127.0.0.1)
+  let ipAddress = '';
+  Object.keys(interfaces).forEach((iface) => {
     interfaces[iface].forEach((ifaceDetail) => {
-        if (ifaceDetail.family === 'IPv4' && !ifaceDetail.internal) {
-            ipAddress = ifaceDetail.address;
-        }
+      if (ifaceDetail.family === 'IPv4' && !ifaceDetail.internal) {
+        ipAddress = ifaceDetail.address;
+      }
     });
-});
+  });
 
-console.log("ipAddress", ipAddress);
+  console.log("ipAddress", ipAddress);
 
-return ipAddress;
+  return ipAddress;
 }
 
 //#endregion
@@ -202,7 +220,7 @@ app.listen(PORT, (err) => {
     return console.log(err);
   }
 
-    setNgrok();
+  setNgrok();
 
   console.log(`Application Running on: ${PORT}`);
 });
