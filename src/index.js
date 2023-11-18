@@ -84,7 +84,7 @@ const getNgrokTunnels = () => {
         console.error('Error al procesar la información de los túneles:', error);
       }
     });
-  });
+  }); 
 
   request.on('error', (error) => {
     console.error('Error al obtener información de los túneles:', error);
