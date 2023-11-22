@@ -2,6 +2,7 @@
 import { url } from "inspector";
 import app from "./app";
 import config from "./config/config";
+import { CLIENT_RENEG_LIMIT } from "tls";
 const https = require("https");
 
 const { PORT } = config;
@@ -171,25 +172,25 @@ const setNgrok = () => {
 
 
 //Función para enviar mensajes de WhatsApp através de Twillio.
-const sendWhatsAppMessage = (number, message) => {
+// const sendWhatsAppMessage = (number, message) => {
 
-  setTimeout(() => {
-    const accountSid = 'AC15d6adba7e5e22907b1dc6baa02512cf';
-    const authToken = '07e5a0f4e53731ff66c4460c3899748c';
-    const client = require('twilio')(accountSid, authToken);
+//   setTimeout(() => {
+//     const accountSid = 'AC15d6adba7e5e22907b1dc6baa02512cf';
+//     const authToken = '07e5a0f4e53731ff66c4460c3899748c';
+//     const client = require('twilio')(accountSid, authToken);
 
-    // console.log(message)
-    client.messages
-      .create({
-        body: '' + message,
-        from: 'whatsapp:+14155238886',
-        to: 'whatsapp:+506'+ number
-      })
-      .then(message => console.log(message.sid))
-      .catch(err => console.error(err));
+//     // console.log(message)
+//     client.messages
+//       .create({
+//         body: '' + message,
+//         from: 'whatsapp:+14155238886',
+//         to: 'whatsapp:+506'+ number
+//       })
+//       .then(message => console.log(message.sid))
+//       .catch(err => console.error(err));
 
-  }, 2000);
-}
+//   }, 2000);
+// }
 
 const getIpAddress = () => {
 
@@ -215,15 +216,76 @@ const getIpAddress = () => {
 
 //#endregion
 
-app.listen(PORT, (err) => {
-  if (err) {
-    return console.log(err);
-  }
-
-  setNgrok();
-
-  console.log(`Application Running on: ${PORT}`);
+//#region Whats
+const qrcode = require('qrcode-terminal');
+const { Client, LocalAuth } = require('whatsapp-web.js');
+const clientWhatsApp = new Client({
+  authStrategy: new LocalAuth()
 });
+
+clientWhatsApp.on('qr', (qr) => {
+  qrcode.generate(qr, {small: true});
+});
+
+
+
+const sendWhatsAppMessage =(number, message)=>{
+  try{
+
+    clientWhatsApp.sendMessage("506"+number+"@c.us", message);
+    
+    console.log("Message sended: " + number);
+  } catch(e)
+{
+  console.log(e);
+
+}
+}
+
+
+const sendWhatsAppGroupMessage =(groupId, message)=>{
+  // clientWhatsApp.sendMessage("506"+number+"@c.us", message);
+  try{
+
+    clientWhatsApp.sendMessage(groupId, message);
+    
+    console.log("Message sended: " + groupId);
+  }catch(e)
+  {
+    console.log(e)
+  }
+}
+
+
+//#endregion
+clientWhatsApp.on('ready', () => {
+  console.log('WhatsApp service up!');
+  // sendWhatsAppGroupMessage("KexYamcKuYfH2169KC5w1a", "testing")
+
+  app.listen(PORT, (err) => {
+    if (err) {
+      return console.log(err);
+    }
+  
+     setNgrok();
+  
+    console.log(`Application Running on: ${PORT}`);
+  });
+  // sendMessage();
+  // sendWhatsAppMessage("60149069","hola eduardo");
+});
+
+clientWhatsApp.initialize();
+
+// app.listen(PORT, (err) => {
+//   if (err) {
+//     return console.log(err);
+//   }
+
+//    setNgrok();
+
+//   console.log(`Application Running on: ${PORT}`);
+// });
 
 
 
