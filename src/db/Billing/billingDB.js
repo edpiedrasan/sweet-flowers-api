@@ -183,7 +183,7 @@ export default class billingDB {
 
             query = `
                 INSERT INTO paymenthistory ( idBilling, amount, active, createdAt, createdBy) 
-                VALUES ( '${idBilling}', '${newInfo.advancePayment != '' ? newInfo.advancePayment : total}', '1', CURRENT_TIMESTAMP, '${user}');
+                VALUES ( '${idBilling}', '${newInfo.paymentclientway.value == '2'/*Contado*/ ? total : newInfo.advancePayment }', '1', CURRENT_TIMESTAMP, '${user}');
                         `
 
 

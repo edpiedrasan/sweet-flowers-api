@@ -197,10 +197,15 @@ export default class billingController {
 
       const updateStock = await billingDB.updateStockDB(newInfo);
 
-      if (newInfo.advancePayment != '') {
+      // if (newInfo.advancePayment != '') {
+        if(newInfo.paymentclientway.value == '2'/*Contado*/ ||
+        (newInfo.paymentclientway.value == '1'/*Credito*/ && newInfo.advancePayment != '' && newInfo.advancePayment != undefined && newInfo.advancePayment != null)
+        )
+        {
+          const saveHistoryPayment = await billingDB.saveHistoryPaymentDB(billing.insertId, newInfo, user);
 
-        const saveHistoryPayment = await billingDB.saveHistoryPaymentDB(billing.insertId, newInfo, user);
-      }
+        }
+      // }
 
 
 
