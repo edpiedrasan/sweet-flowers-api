@@ -1589,7 +1589,7 @@ Total: ${quantity} paquetes. `
         context.font = "bold 20pt Arial";
         context.fillStyle = "black";
         // context.fillText("Factura #" + idBillingDecoded + " - " + title, 90, 30);
-        context.fillText("Factura #" + idBillingDecoded, 90, 30);
+        context.fillText("Factura #" + idBillingDecoded, 100, 30);
 
 
 
@@ -1602,7 +1602,7 @@ Total: ${quantity} paquetes. `
         if (infoBilling.sensitiveInfo == '1') {
           generalInformation = [...generalInformation,
           { name: "Proveedor:", value: "Ronald Piedra Carballo" },
-          { name: "Teléfono:", value: "85466100" },
+          { name: "Teléfono:", value: "8546-6109" },
           { name: "Cédula:", value: "1-0777-0079" },
           ]
         } else {
