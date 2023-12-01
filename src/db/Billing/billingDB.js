@@ -183,7 +183,7 @@ export default class billingDB {
 
             query = `
                 INSERT INTO paymenthistory ( idBilling, amount, active, createdAt, createdBy) 
-                VALUES ( '${idBilling}', '${newInfo.paymentclientway.value == '2'/*Contado*/ ? total : newInfo.advancePayment }', '1', CURRENT_TIMESTAMP, '${user}');
+                VALUES ( '${idBilling}', '${newInfo.paymentclientway.value == '2'/*Contado*/ ? total : newInfo.advancePayment}', '1', CURRENT_TIMESTAMP, '${user}');
                         `
 
 
@@ -510,6 +510,7 @@ export default class billingDB {
             billing.idBilling,
             land.name,
             enterpriseclient.enterpriseName,
+            enterpriseclient.sensitiveInfo,
             partnerenterprisecontact.nameRepresentativePartner,
             paymentclientway.wayPayment,
             billing.expirationDays,
@@ -545,6 +546,17 @@ export default class billingDB {
         
         
             THEN "Vencida"
+
+            WHEN 
+            /*Balance es igual a 0*/
+            (
+                quantity - (
+                SELECT 
+                CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END 
+                as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1)
+                ) =0
+            THEN "Cancelada"
+
             ELSE "Al día"
             END AS expirationState,
 
@@ -643,6 +655,7 @@ export default class billingDB {
                 billing.idBilling,
                 land.name,
                 enterpriseclient.enterpriseName,
+                enterpriseclient.sensitiveInfo,
                 partnerenterprisecontact.nameRepresentativePartner,
                 paymentclientway.wayPayment,
                 billing.expirationDays,
@@ -664,6 +677,7 @@ export default class billingDB {
             
                /*Calcular el vencimiento de una factura*/
                CASE
+
                     WHEN 
                         /*Mayor a 28 días*/
                         DATEDIFF(NOW(), billing.createdAt) > enterpriseclient.creditLimitDays 
@@ -680,6 +694,17 @@ export default class billingDB {
             
             
                 THEN "Vencida"
+
+                WHEN 
+                /*Balance es igual a 0*/
+                (
+                    quantity - (
+                    SELECT 
+                    CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END 
+                    as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1)
+                    ) =0
+                THEN "Cancelada"
+
                 ELSE "Al día"
                 END AS expirationState,
     

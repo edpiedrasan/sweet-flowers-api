@@ -198,13 +198,12 @@ export default class billingController {
       const updateStock = await billingDB.updateStockDB(newInfo);
 
       // if (newInfo.advancePayment != '') {
-        if(newInfo.paymentclientway.value == '2'/*Contado*/ ||
+      if (newInfo.paymentclientway.value == '2'/*Contado*/ ||
         (newInfo.paymentclientway.value == '1'/*Credito*/ && newInfo.advancePayment != '' && newInfo.advancePayment != undefined && newInfo.advancePayment != null)
-        )
-        {
-          const saveHistoryPayment = await billingDB.saveHistoryPaymentDB(billing.insertId, newInfo, user);
+      ) {
+        const saveHistoryPayment = await billingDB.saveHistoryPaymentDB(billing.insertId, newInfo, user);
 
-        }
+      }
       // }
 
 
@@ -279,39 +278,39 @@ export default class billingController {
     }
   }
 
-    //funcion insertar nuevo dato maestro
-    async getBillings(req, res) {
-      // const { type, newInfo, form, user } = req.body
-      const { startDate, endDate } = req.body
-  
-      console.log("Dates: ", req.body);
-  
-  
-      try {
-  
-        const billings = await billingDB.getBillingsDB(startDate, endDate);
-  
-        console.log(billings);
-  
-  
-        return res.status(200).send({
-          status: 200,
-          sucess: true,
-          payload: {
-            message: "se cargo exitosamente.",
-            billings
-          },
-        });
-      } catch (error) {
-        console.log(error);
-        return res.status(500).send({
-          status: 500,
-          sucess: false,
-          message: error.sqlMessage,
-        });
-      }
+  //funcion insertar nuevo dato maestro
+  async getBillings(req, res) {
+    // const { type, newInfo, form, user } = req.body
+    const { startDate, endDate } = req.body
+
+    console.log("Dates: ", req.body);
+
+
+    try {
+
+      const billings = await billingDB.getBillingsDB(startDate, endDate);
+
+      console.log(billings);
+
+
+      return res.status(200).send({
+        status: 200,
+        sucess: true,
+        payload: {
+          message: "se cargo exitosamente.",
+          billings
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({
+        status: 500,
+        sucess: false,
+        message: error.sqlMessage,
+      });
     }
-  
+  }
+
 
   //Extraer el historial de pagos de una factura
   async getPaymentHistory(req, res) {
@@ -1563,7 +1562,7 @@ Total: ${quantity} paquetes. `
       //#endregion
 
 
-      const width = 400;
+      const width = infoBilling.sensitiveInfo == '1'? 430 : 400;
       let height = 0;
 
       let canvas = createCanvas(width, height);
@@ -1589,17 +1588,33 @@ Total: ${quantity} paquetes. `
         // Título de la factura
         context.font = "bold 20pt Arial";
         context.fillStyle = "black";
-        context.fillText("Factura #" + idBillingDecoded + " - " + title, 90, 30);
+        // context.fillText("Factura #" + idBillingDecoded + " - " + title, 90, 30);
+        context.fillText("Factura #" + idBillingDecoded, 90, 30);
+
 
 
 
         let generalInformation = [
           { name: "Cliente:", value: infoBilling.enterpriseName },
-          { name: "Proveedor:", value: "R. Piedra" },
-          { name: "Fecha:", value: infoBilling.createdAt },
-          { name: "Vendedor:", value: infoBilling.createdBy },
-          { name: "Proforma:", value: infoBilling.wayPayment },
 
+        ]
+
+        if (infoBilling.sensitiveInfo == '1') {
+          generalInformation = [...generalInformation,
+          { name: "Proveedor:", value: "Ronald Piedra Carballo" },
+          { name: "Teléfono:", value: "85466100" },
+          { name: "Cédula:", value: "1-0777-0079" },
+          ]
+        } else {
+          generalInformation = [...generalInformation,
+          { name: "Proveedor:", value: "R. Piedra" },
+          ]
+        }
+
+        generalInformation = [...generalInformation,
+        { name: "Fecha:", value: infoBilling.createdAt },
+        { name: "Vendedor:", value: infoBilling.createdBy },
+        { name: "Proforma:", value: infoBilling.wayPayment },
         ]
 
         if (infoBilling.wayPayment != "Contado" /*Crédito*/) {
@@ -1614,7 +1629,7 @@ Total: ${quantity} paquetes. `
         context.font = "20pt Calibri";
 
         let x = 10
-        let y = 150
+        let y = 160
 
         let spaceHeight = 60;
         let startIn = 100
@@ -1753,7 +1768,9 @@ Total: ${quantity} paquetes. `
 
 
 
-      let nameBilling = "/Factura n.º " + idBillingDecoded + " - " + title + " - " + infoBilling.enterpriseName + ".png";
+      // let nameBilling = "/Factura n.º " + idBillingDecoded + " - " + title + " - " + infoBilling.enterpriseName + ".png";
+      let nameBilling = "/Factura n.º " + idBillingDecoded + " - " + infoBilling.enterpriseName + ".png";
+
       const buffer = canvas.toBuffer("image/png");
       fs.writeFileSync(__dirname + nameBilling, buffer);
       console.log(__dirname);

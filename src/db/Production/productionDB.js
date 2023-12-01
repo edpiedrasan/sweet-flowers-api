@@ -10,7 +10,7 @@ export default class productionDB {
 
         try {
             query = `INSERT INTO dayproductionregister ( idLand, active, createdAt, createdBy) 
-            VALUES ( '${land}', '1', ${newInfo.productionDate != "" ? `'` + newInfo.productionDate.replace('T', ' ') + `'` : `CURRENT_TIMESTAMP`}, '${user}');`
+            VALUES ( '${land}', '1', ${( newInfo.productionDate != "" && newInfo.productionDate != undefined && newInfo.productionDate != null )? `'` + newInfo.productionDate.replace('T', ' ') + `'` : `CURRENT_TIMESTAMP`}, '${user}');`
 
 
             console.log(query);
@@ -51,7 +51,10 @@ export default class productionDB {
 
         let query = ""
         keys.map(key => {
-            query += `
+            if (newInfo[key] !== '') {
+
+
+                query += `
             INSERT INTO productionbyproducts (idDayProductionRegister, idProduct, quantity, active, createdAt, createdBy)
             SELECT '${dayId}', idProduct, '${newInfo[key]}', '1', CURRENT_TIMESTAMP, '${user}'
             FROM product
@@ -61,6 +64,7 @@ export default class productionDB {
 
             
             `
+            }
         })
 
 

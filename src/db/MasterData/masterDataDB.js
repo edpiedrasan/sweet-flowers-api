@@ -30,7 +30,7 @@ export default class masterDataDB {
             query = `SELECT * FROM employee`
 
             if (form == "clients") {
-                query = `INSERT INTO enterpriseclient ( enterpriseName, enterpriseNumber, creditLimitDays, createdBy) VALUES ( '${newInfo.enterpriseName}', '${newInfo.enterpriseNumber != undefined ? newInfo.enterpriseNumber : ''}', '${newInfo.creditLimitDays}', '${user}');`
+                query = `INSERT INTO enterpriseclient ( enterpriseName, enterpriseNumber, creditLimitDays, 	sensitiveInfo,  createdBy) VALUES ( '${newInfo.enterpriseName}', '${newInfo.enterpriseNumber != undefined ? newInfo.enterpriseNumber : ''}', '${newInfo.creditLimitDays}', '${newInfo.sensitiveInfo.value}','${user}');`
             }
 
             
