@@ -1562,7 +1562,7 @@ Total: ${quantity} paquetes. `
       //#endregion
 
 
-      const width = infoBilling.sensitiveInfo == '1'? 430 : 400;
+      const width = infoBilling.sensitiveInfo == '1' ? 430 : 400;
       let height = 0;
 
       let canvas = createCanvas(width, height);
@@ -1824,6 +1824,41 @@ Total: ${quantity} paquetes. `
         payload: {
           message: "se cargo exitosamente.",
           detailBilling
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send({
+        status: 500,
+        sucess: false,
+        message: error.sqlMessage,
+      });
+    }
+  }
+
+
+  //Eliminar la factura
+  async deleteBilling(req, res) {
+    // const { type, newInfo, form, user } = req.body
+    // const { form, newInfo, user, total } = req.body
+
+    const { idBilling, user } = req.body
+
+
+    try {
+
+      const products = await billingDB.getProductsByBillingDB(idBilling);
+      const resultStock = await billingDB.returnStockDB(products, user);
+      const deleteBillingDB = await billingDB.deleteBillingDB(idBilling, user);
+
+      console.log("Billing", idBilling, "user", user);
+
+      return res.status(200).send({
+        status: 200,
+        sucess: true,
+        payload: {
+          message: "Se eliminó exitosamente.",
+
         },
       });
     } catch (error) {

@@ -856,7 +856,7 @@ export default class billingDB {
         try {
 
             query = `
-                SELECT ip.quantity, pr.nameProduct,CONCAT('₡ ', FORMAT(ip.currentUnitaryPrice, 0))  as unitaryPrice , CONCAT('₡ ', FORMAT((ip.currentUnitaryPrice * ip.quantity), 0)) as totalProduct  
+                SELECT ip.quantity, ip.idProduct, pr.nameProduct,CONCAT('₡ ', FORMAT(ip.currentUnitaryPrice, 0))  as unitaryPrice , CONCAT('₡ ', FORMAT((ip.currentUnitaryPrice * ip.quantity), 0)) as totalProduct  
   
   
                 FROM itempurchaseorder ip, product pr, purchaseorder po, billing bi
@@ -886,6 +886,81 @@ export default class billingDB {
             //}
         } catch (e) { console.log(e) }
     }
+
+    //Retorna products a un stock.
+    static returnStockDB(products, user) {
+
+        let query = ""
+
+        try {
+
+            products.map(product => {
+                query += `
+                UPDATE product
+                    SET stock = stock + ${product.quantity} , updatedBy='${user}'
+                WHERE idProduct= ${product.idProduct};  `
+            })
+
+
+            console.log(query);
+
+            return new Promise((resolve, reject) => {
+                try {
+                    connectionSF.query(query, (error, results) => {
+                        if (error) {
+                            reject(error)
+                        } else {
+                            resolve(results)
+                        }
+                    })
+                } catch (error) {
+                    console.log(error);
+                    reject(error)
+                }
+            })
+
+            //}
+        } catch (e) { console.log(e) }
+    }
+
+    //Elimina una factura.
+    static deleteBillingDB(idBilling, user) {
+
+        let query = ""
+        try {
+            query = `
+            
+            UPDATE billing SET active = '0', updatedBy = '${user}' WHERE billing.idBilling = ${idBilling};
+            
+            UPDATE purchaseorder SET active= '0', updatedBy = '${user}' WHERE idPurchaseOrder= (SELECT idPurchaseOrder FROM billing WHERE idBilling=${idBilling});
+            
+            UPDATE itempurchaseorder SET active= '0', updatedBy = '${user}' WHERE idPurchaseOrder= (SELECT idPurchaseOrder FROM billing WHERE idBilling= ${idBilling});
+            
+            UPDATE paymenthistory SET active= '0', updatedBy = '${user}' WHERE idBilling=${idBilling}
+            `;
+
+            console.log(query);
+
+            return new Promise((resolve, reject) => {
+                try {
+                    connectionSF.query(query, (error, results) => {
+                        if (error) {
+                            reject(error)
+                        } else {
+                            resolve(results)
+                        }
+                    })
+                } catch (error) {
+                    console.log(error);
+                    reject(error)
+                }
+            })
+
+            //}
+        } catch (e) { console.log(e) }
+    }
+
+
 
 
 
