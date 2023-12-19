@@ -662,7 +662,7 @@ export default class billingDB {
                 purchaseorder.idPurchaseOrder,
                 purchaseorder.quantity,
                 enterpriseclient.creditLimitDays,
-                DATE_FORMAT(DATE_ADD(DATE_FORMAT(billing.createdAt, "%Y-%m-%d %H:%i"), INTERVAL 8 DAY), "%d-%m-%Y %H:%i") AS dateToExpirate,
+                DATE_FORMAT(DATE_ADD(DATE_FORMAT(billing.createdAt, "%Y-%m-%d %H:%i"), INTERVAL enterpriseclient.creditLimitDays DAY), "%d-%m-%Y %H:%i") AS dateToExpirate,
     
                 (SELECT 
                     CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END
