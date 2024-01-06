@@ -90,11 +90,6 @@ const getNgrokTunnels = () => {
         sendWhatsAppMessage('89045142', 'Enlace: ' + frontRoute + " , o: " + frontLocal);
         sendWhatsAppMessage('85466109', 'Enlace: ' + frontRoute + " , o: " + frontLocal);
 
-        // sendWhatsAppMessage('60149039', 'En de la casa: ');
-        // sendWhatsAppMessage('60149039', frontLocal);
-
-
-        // console.log("Ruta del API: " + apiRoute);
         modifyJson(apiRoute)
 
 
@@ -265,30 +260,33 @@ clientWhatsApp.on('ready', () => {
   console.log('WhatsApp service up!');
   // sendWhatsAppGroupMessage("KexYamcKuYfH2169KC5w1a", "testing")
 
-  app.listen(PORT, (err) => {
-    if (err) {
-      return console.log(err);
-    }
+  setNgrok();
+  // app.listen(PORT, (err) => {
+  //   if (err) {
+  //     return console.log(err);
+  //   }
   
-     setNgrok();
+  //    setNgrok();
   
-    console.log(`Application Running on: ${PORT}`);
-  });
+  //   console.log(`Application Running on: ${PORT}`);
+  // });
   // sendMessage();
   // sendWhatsAppMessage("60149069","hola eduardo");
 });
 
-clientWhatsApp.initialize();
+// clientWhatsApp.initialize();
 
-// app.listen(PORT, (err) => {
-//   if (err) {
-//     return console.log(err);
-//   }
+app.listen(PORT, (err) => {
+  if (err) {
+    return console.log(err);
+  }
 
-//    setNgrok();
+  modifyJson("http://localhost:43888")
+  clientWhatsApp.initialize();
+  //  setNgrok();
 
-//   console.log(`Application Running on: ${PORT}`);
-// });
+  console.log(`Application Running on: ${PORT}`);
+});
 
 
 
