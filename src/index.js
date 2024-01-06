@@ -86,9 +86,12 @@ const getNgrokTunnels = () => {
 
         
 
-        sendWhatsAppMessage('60149039', 'Fuera de la casa: ' + frontRoute);
-        sendWhatsAppMessage('60149039', 'En de la casa: ');
-        sendWhatsAppMessage('60149039', frontLocal);
+        sendWhatsAppMessage('60149039', 'Enlace: ' + frontRoute + " , o: " + frontLocal);
+        sendWhatsAppMessage('89045142', 'Enlace: ' + frontRoute + " , o: " + frontLocal);
+        sendWhatsAppMessage('85466109', 'Enlace: ' + frontRoute + " , o: " + frontLocal);
+
+        // sendWhatsAppMessage('60149039', 'En de la casa: ');
+        // sendWhatsAppMessage('60149039', frontLocal);
 
 
         // console.log("Ruta del API: " + apiRoute);
