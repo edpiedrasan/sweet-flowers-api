@@ -528,37 +528,78 @@ export default class billingDB {
             as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1) as balance,
             
         
-           /*Calcular el vencimiento de una factura*/
-           CASE
-                WHEN 
-                    /*Mayor a 28 días*/
-                    DATEDIFF(NOW(), billing.createdAt) > enterpriseclient.creditLimitDays 
-
-                    /*Es de tipo crédito*/
-                    AND paymentclientway.idPaymentClientWay = 1 
+                     
+            
                     
-                    AND /*Cuanto es lo que debe*/
-                    (quantity - 
-                        (SELECT 
-                            CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END
-                            
-                            as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1)) >0 
-        
-        
-            THEN "Vencida"
+                
+                
+                
+                
+                
+                
+                
+            
+            /*Calcular el vencimiento de una factura*/
+            CASE
 
-            WHEN 
-            /*Balance es igual a 0*/
-            (
-                quantity - (
-                SELECT 
-                CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END 
-                as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1)
-                ) =0
-            THEN "Cancelada"
+                 WHEN 
+                     /*Mayor a 28 días*/
+                     DATEDIFF(NOW(), billing.createdAt) > enterpriseclient.creditLimitDays 
+ 
+                     /*Es de tipo crédito*/
+                     AND paymentclientway.idPaymentClientWay = 1 
+                     
+                     AND /*Cuanto es lo que debe*/
+                     (quantity - 
+                         (SELECT 
+                             CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END
+                             
+                             as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1)) >0 
+         
+         
+             THEN "Vencida"
 
-            ELSE "Al día"
-            END AS expirationState,
+             ELSE "Al día"
+             END AS expirationState,
+             
+             
+             
+             
+             
+             
+             
+             
+             
+             
+             
+             
+            /*Calcular el vencimiento de una factura*/
+            CASE
+
+             WHEN 
+             /*Balance es igual a 0*/
+             (
+                 quantity - (
+                 SELECT 
+                 CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END 
+                 as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1)
+                 ) =0
+             THEN "Cancelada"
+
+             ELSE "Pendiente"
+             END AS paymentState,
+             
+             
+             
+             
+             
+             
+             
+             
+             
+             
+     
+
 
             DATE_FORMAT(billing.createdAt, "%d-%m-%Y") createdAt
 
@@ -675,39 +716,75 @@ export default class billingDB {
                 as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1) as balance,
                 
             
-               /*Calcular el vencimiento de una factura*/
-               CASE
-
-                    WHEN 
-                        /*Mayor a 28 días*/
-                        DATEDIFF(NOW(), billing.createdAt) > enterpriseclient.creditLimitDays 
-    
-                        /*Es de tipo crédito*/
-                        AND paymentclientway.idPaymentClientWay = 1 
-                        
-                        AND /*Cuanto es lo que debe*/
-                        (quantity - 
-                            (SELECT 
-                                CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END
-                                
-                                as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1)) >0 
+                    
+                
+                
+                
+                
+                
+                
+                
             
-            
-                THEN "Vencida"
-
-                WHEN 
-                /*Balance es igual a 0*/
-                (
-                    quantity - (
-                    SELECT 
-                    CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END 
-                    as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1)
-                    ) =0
-                THEN "Cancelada"
-
-                ELSE "Al día"
-                END AS expirationState,
-    
+                /*Calcular el vencimiento de una factura*/
+                CASE
+ 
+                     WHEN 
+                         /*Mayor a 28 días*/
+                         DATEDIFF(NOW(), billing.createdAt) > enterpriseclient.creditLimitDays 
+     
+                         /*Es de tipo crédito*/
+                         AND paymentclientway.idPaymentClientWay = 1 
+                         
+                         AND /*Cuanto es lo que debe*/
+                         (quantity - 
+                             (SELECT 
+                                 CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END
+                                 
+                                 as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1)) >0 
+             
+             
+                 THEN "Vencida"
+ 
+                 ELSE "Al día"
+                 END AS expirationState,
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                /*Calcular el vencimiento de una factura*/
+                CASE
+ 
+                 WHEN 
+                 /*Balance es igual a 0*/
+                 (
+                     quantity - (
+                     SELECT 
+                     CASE WHEN  SUM(amount)  IS NULL THEN 0 ELSE SUM(amount) END 
+                     as amount FROM paymenthistory WHERE idBilling=billing.idBilling and active=1)
+                     ) =0
+                 THEN "Cancelada"
+ 
+                 ELSE "Pendiente"
+                 END AS paymentState,
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+         
                 DATE_FORMAT(billing.createdAt, "%d-%m-%Y %H:%i") AS createdAt,  
                 purchaseorder.createdBy
   
