@@ -79,16 +79,21 @@ const getNgrokTunnels = () => {
 
         let apiRoute = parsedData.tunnels.filter(tunnel => tunnel.name == "api")[0].public_url
         let frontRoute = parsedData.tunnels.filter(tunnel => tunnel.name == "front")[0].public_url
-        let frontLocal= getIpAddress() + ":3000";
+        let frontLocal = getIpAddress() + ":3000";
         console.log("Front: ", frontRoute);
         console.log("Front local: ", frontRoute);
         console.log("Api: ", apiRoute);
 
-        
+        let numbers = ['60149039', '89045142', '85466109'];
 
-        sendWhatsAppMessage('60149039', 'Enlace: ' + frontRoute + " , o: " + frontLocal);
-        sendWhatsAppMessage('89045142', 'Enlace: ' + frontRoute + " , o: " + frontLocal);
-        sendWhatsAppMessage('85466109', 'Enlace: ' + frontRoute + " , o: " + frontLocal);
+        numbers.map(number => {
+          sendWhatsAppMessage(number, 'Exterior: ' + frontRoute+ '. Interior: ' + frontLocal);
+
+        })
+
+        // sendWhatsAppMessage('60149039', 'Enlace: ' + frontRoute + " , o: " + frontLocal);
+        // sendWhatsAppMessage('89045142', 'Enlace: ' + frontRoute + " , o: " + frontLocal);
+        // sendWhatsAppMessage('85466109', 'Enlace: ' + frontRoute + " , o: " + frontLocal);
 
         modifyJson(apiRoute)
 
@@ -158,7 +163,7 @@ const setNgrok = () => {
     openNgrok();
 
 
-     console.log("Waiting 10 seconds...");
+    console.log("Waiting 10 seconds...");
     setTimeout(() => {
       console.log('Estableciendo los Ngrok Tunnels.');
       getNgrokTunnels();
@@ -222,34 +227,32 @@ const clientWhatsApp = new Client({
 });
 
 clientWhatsApp.on('qr', (qr) => {
-  qrcode.generate(qr, {small: true});
+  qrcode.generate(qr, { small: true });
 });
 
 
 
-const sendWhatsAppMessage =(number, message)=>{
-  try{
+const sendWhatsAppMessage = (number, message) => {
+  try {
 
-    clientWhatsApp.sendMessage("506"+number+"@c.us", message);
-    
+    clientWhatsApp.sendMessage("506" + number + "@c.us", message);
+
     console.log("Message sended: " + number);
-  } catch(e)
-{
-  console.log(e);
+  } catch (e) {
+    console.log(e);
 
+  }
 }
-}
 
 
-const sendWhatsAppGroupMessage =(groupId, message)=>{
+const sendWhatsAppGroupMessage = (groupId, message) => {
   // clientWhatsApp.sendMessage("506"+number+"@c.us", message);
-  try{
+  try {
 
     clientWhatsApp.sendMessage(groupId, message);
-    
+
     console.log("Message sended: " + groupId);
-  }catch(e)
-  {
+  } catch (e) {
     console.log(e)
   }
 }
@@ -265,9 +268,9 @@ clientWhatsApp.on('ready', () => {
   //   if (err) {
   //     return console.log(err);
   //   }
-  
+
   //    setNgrok();
-  
+
   //   console.log(`Application Running on: ${PORT}`);
   // });
   // sendMessage();
@@ -281,7 +284,8 @@ app.listen(PORT, (err) => {
     return console.log(err);
   }
 
-  modifyJson("http://localhost:43888")
+  modifyJson(`http://${getIpAddress()}:43888`)
+  shouldModifyJson = true;
   clientWhatsApp.initialize();
   //  setNgrok();
 
