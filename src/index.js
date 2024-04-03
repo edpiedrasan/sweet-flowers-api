@@ -286,7 +286,7 @@ app.listen(PORT, (err) => {
 
   modifyJson(`http://${getIpAddress()}:43888`)
   shouldModifyJson = true;
-  clientWhatsApp.initialize();
+  // clientWhatsApp.initialize();
   //  setNgrok();
 
   console.log(`Application Running on: ${PORT}`);
