@@ -2,14 +2,16 @@
 import { url } from "inspector";
 import app from "./app";
 import config from "./config/config";
+// import telegramBot from "./helpers/telegram";
 import { CLIENT_RENEG_LIMIT } from "tls";
 const https = require("https");
 
-const { PORT } = config;
+/*Telegram*/
+const { PORT, telegramBotToken, floralFlowGroupIdTelegram } = config;
+const telegramInstance = require('node-telegram-bot-api');
 
-
-
-
+// Create a bot that uses 'polling' to fetch new updates
+const telegramBot = new telegramInstance(telegramBotToken, { polling: true });
 
 //#region Ngrok 
 const express = require('express');
@@ -25,6 +27,8 @@ const fs = require('fs');
 
 const { exec } = require('child_process');
 const isWindows = process.platform === 'win32';
+
+let msgLink ="";
 
 //Función para levantar la url de ngrok
 const openNgrok = () => {
@@ -84,16 +88,17 @@ const getNgrokTunnels = () => {
         console.log("Front local: ", frontRoute);
         console.log("Api: ", apiRoute);
 
-        let numbers = ['60149039', '89045142', '85466109'];
+        // let numbers = ['60149039', '89045142', '85466109'];
 
-        numbers.map(number => {
-          sendWhatsAppMessage(number, 'Exterior: ' + frontRoute+ '. Interior: ' + frontLocal);
+        // numbers.map(number => {
+        //   sendWhatsAppMessage(number, 'Exterior: ' + frontRoute + '. Interior: ' + frontLocal);
 
-        })
+        // })
 
-        // sendWhatsAppMessage('60149039', 'Enlace: ' + frontRoute + " , o: " + frontLocal);
-        // sendWhatsAppMessage('89045142', 'Enlace: ' + frontRoute + " , o: " + frontLocal);
-        // sendWhatsAppMessage('85466109', 'Enlace: ' + frontRoute + " , o: " + frontLocal);
+        // send a message to the chat acknowledging receipt of their message
+        telegramBot.sendMessage(floralFlowGroupIdTelegram, 'Exterior: ' + frontRoute + '. Interior: ' + frontLocal);
+
+        msgLink= 'Exterior: ' + frontRoute + '. Interior: ' + frontLocal;
 
         shouldModifyJson = true;
         modifyJson(apiRoute);
@@ -170,7 +175,7 @@ const setNgrok = () => {
     setTimeout(() => {
       console.log('Estableciendo los Ngrok Tunnels.');
       getNgrokTunnels();
-    }, 60000);
+    }, 10000);
 
   });
 
@@ -223,64 +228,68 @@ const getIpAddress = () => {
 //#endregion
 
 //#region Whats
-const qrcode = require('qrcode-terminal');
-const { Client, LocalAuth } = require('whatsapp-web.js');
-const clientWhatsApp = new Client({
-  authStrategy: new LocalAuth()
-});
+// const qrcode = require('qrcode-terminal');
+// const { Client, LocalAuth } = require('whatsapp-web.js');
+// const clientWhatsApp = new Client({
+//   authStrategy: new LocalAuth()
+// });
 
-clientWhatsApp.on('qr', (qr) => {
-  qrcode.generate(qr, { small: true });
-});
-
-
-
-const sendWhatsAppMessage = (number, message) => {
-  try {
-
-    clientWhatsApp.sendMessage("506" + number + "@c.us", message);
-
-    console.log("Message sended: " + number);
-  } catch (e) {
-    console.log(e);
-
-  }
-}
+// clientWhatsApp.on('qr', (qr) => {
+//   qrcode.generate(qr, { small: true });
+// });
 
 
-const sendWhatsAppGroupMessage = (groupId, message) => {
-  // clientWhatsApp.sendMessage("506"+number+"@c.us", message);
-  try {
 
-    clientWhatsApp.sendMessage(groupId, message);
+// const sendWhatsAppMessage = (number, message) => {
+//   try {
 
-    console.log("Message sended: " + groupId);
-  } catch (e) {
-    console.log(e)
-  }
-}
+//     clientWhatsApp.sendMessage("506" + number + "@c.us", message);
+
+//     console.log("Message sended: " + number);
+//   } catch (e) {
+//     console.log(e);
+
+//   }
+// }
+
+
+// const sendWhatsAppGroupMessage = (groupId, message) => {
+//   // clientWhatsApp.sendMessage("506"+number+"@c.us", message);
+//   try {
+
+//     clientWhatsApp.sendMessage(groupId, message);
+
+//     console.log("Message sended: " + groupId);
+//   } catch (e) {
+//     console.log(e)
+//   }
+// }
 
 
 //#endregion
-clientWhatsApp.on('ready', () => {
-  console.log('WhatsApp service up!');
-  // sendWhatsAppGroupMessage("KexYamcKuYfH2169KC5w1a", "testing")
+// clientWhatsApp.on('ready', () => {
+//   console.log('WhatsApp service up!');
+//   // sendWhatsAppGroupMessage("KexYamcKuYfH2169KC5w1a", "testing")
 
-  setNgrok();
-  // app.listen(PORT, (err) => {
-  //   if (err) {
-  //     return console.log(err);
-  //   }
+//   setNgrok();
+//   // app.listen(PORT, (err) => {
+//   //   if (err) {
+//   //     return console.log(err);
+//   //   }
 
-  //    setNgrok();
+//   //    setNgrok();
 
-  //   console.log(`Application Running on: ${PORT}`);
-  // });
-  // sendMessage();
-  // sendWhatsAppMessage("60149069","hola eduardo");
-});
+//   //   console.log(`Application Running on: ${PORT}`);
+//   // });
+//   // sendMessage();
+//   // sendWhatsAppMessage("60149069","hola eduardo");
+// });
 
 // clientWhatsApp.initialize();
+
+
+
+
 
 app.listen(PORT, (err) => {
   if (err) {
@@ -289,11 +298,45 @@ app.listen(PORT, (err) => {
 
   modifyJson(`http://${getIpAddress()}:43888`)
   shouldModifyJson = true;
-  clientWhatsApp.initialize();
-  //  setNgrok();
+  // clientWhatsApp.initialize();
+  setNgrok();
 
   console.log(`Application Running on: ${PORT}`);
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Escuchando el chat de telegram.
+telegramBot.on('message', (msg) => {
+  const chatId = msg.chat.id;
+  console.log("msg", msg)
+
+  if (msg.text == "Id") {
+    // send a message to the chat acknowledging receipt of their message
+    telegramBot.sendMessage(chatId, 'Su id es: ' + msg.chat.id);
+  } else if (msg.text.includes("Hola")) {
+    // send a message to the chat acknowledging receipt of their message
+    telegramBot.sendMessage(chatId, 'Hola ' + msg.from.first_name + ", he recibido tu mensaje, en un futuro te responderé con lógica.");
+  } else if( ["Link", "Enlace", "Codigo", "Código"])
+  {
+    telegramBot.sendMessage(chatId, 'Hola ' + msg.from.first_name + ", el link es: " + msgLink);
+
+
+  }
+});
+
+
+
 
 
 
