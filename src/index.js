@@ -95,7 +95,8 @@ const getNgrokTunnels = () => {
         // sendWhatsAppMessage('89045142', 'Enlace: ' + frontRoute + " , o: " + frontLocal);
         // sendWhatsAppMessage('85466109', 'Enlace: ' + frontRoute + " , o: " + frontLocal);
 
-        modifyJson(apiRoute)
+        shouldModifyJson = true;
+        modifyJson(apiRoute);
 
 
       } catch (error) {
@@ -145,6 +146,8 @@ const modifyJson = (route) => {
       // Después de modificar el JSON, cambiar la bandera a false para evitar futuras modificaciones
       shouldModifyJson = false;
     });
+  } else {
+    console.log("NO SE MODIFICO", route)
   }
 };
 
@@ -167,7 +170,7 @@ const setNgrok = () => {
     setTimeout(() => {
       console.log('Estableciendo los Ngrok Tunnels.');
       getNgrokTunnels();
-    }, 10000);
+    }, 60000);
 
   });
 
