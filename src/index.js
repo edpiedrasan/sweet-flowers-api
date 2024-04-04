@@ -166,11 +166,11 @@ const setNgrok = () => {
     openNgrok();
 
 
-    console.log("Waiting 2 seconds...");
+    console.log("Waiting 60 seconds...");
     setTimeout(() => {
       console.log('Estableciendo los Ngrok Tunnels.');
       getNgrokTunnels();
-    }, 2000);
+    }, 60000);
 
   });
 
