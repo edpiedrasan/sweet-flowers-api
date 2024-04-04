@@ -119,7 +119,10 @@ Variedad       `;
 
       message += `
 
-Total: ${quantity} paquetes. `
+Total: ${quantity} paquetes. 
+
+
+Creado por: ${user}`
 
       // const cellphones = await masterDataDB.getCellphonesNumber();
       // cellphones.map(phone => {
