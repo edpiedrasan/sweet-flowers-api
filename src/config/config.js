@@ -3,9 +3,12 @@
 import * as dotenv from "dotenv";
 
 dotenv.config();
+let enviroment="PRD"
 
 export default {
-  floralFlowGroupIdTelegram: "-1001999863194",
+  linkIdTelegram: enviroment =="PRD"? "-1001999863194" : "-4158372715",
+  productionIdTelegram: enviroment =="PRD"? "-4182382073" : "-4141486048",
+  
   telegramBotToken: "6787040655:AAHRoafV_OqhLlk8zwyFBDP_hwQqwifAN6k",
   // APP: process.env.APP || "PRD",
   // PORT: process.env.PORT || "43888", // 43888
