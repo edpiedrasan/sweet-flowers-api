@@ -110,7 +110,7 @@ Variedad       `;
       console.log("STOCK", stock)
       quantity = 0
       orderProductsByLetter(stock).map(product => {
-        if (product.stock) {
+        if (product.stock!=0) {
           message += `
             ${product.nameProduct}:    ${product.stock}  `
         }
