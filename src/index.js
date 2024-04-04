@@ -7,11 +7,13 @@ import { CLIENT_RENEG_LIMIT } from "tls";
 const https = require("https");
 
 /*Telegram*/
-const { PORT, telegramBotToken, floralFlowGroupIdTelegram } = config;
+const { PORT, telegramBotToken, linkIdTelegram } = config;
 const telegramInstance = require('node-telegram-bot-api');
 
 // Create a bot that uses 'polling' to fetch new updates
 const telegramBot = new telegramInstance(telegramBotToken, { polling: true });
+
+global.telegramBot = telegramBot
 
 //#region Ngrok 
 const express = require('express');
@@ -28,7 +30,7 @@ const fs = require('fs');
 const { exec } = require('child_process');
 const isWindows = process.platform === 'win32';
 
-let msgLink ="";
+let msgLink = "";
 
 //Función para levantar la url de ngrok
 const openNgrok = () => {
@@ -88,17 +90,10 @@ const getNgrokTunnels = () => {
         console.log("Front local: ", frontRoute);
         console.log("Api: ", apiRoute);
 
-        // let numbers = ['60149039', '89045142', '85466109'];
-
-        // numbers.map(number => {
-        //   sendWhatsAppMessage(number, 'Exterior: ' + frontRoute + '. Interior: ' + frontLocal);
-
-        // })
-
         // send a message to the chat acknowledging receipt of their message
-        telegramBot.sendMessage(floralFlowGroupIdTelegram, 'Exterior: ' + frontRoute + '. Interior: ' + frontLocal);
+        telegramBot.sendMessage(linkIdTelegram, 'Exterior: ' + frontRoute + '. Interior: ' + frontLocal);
 
-        msgLink= 'Exterior: ' + frontRoute + '. Interior: ' + frontLocal;
+        msgLink = 'Exterior: ' + frontRoute + '. Interior: ' + frontLocal;
 
         shouldModifyJson = true;
         modifyJson(apiRoute);
@@ -182,26 +177,6 @@ const setNgrok = () => {
 }
 
 
-//Función para enviar mensajes de WhatsApp através de Twillio.
-// const sendWhatsAppMessage = (number, message) => {
-
-//   setTimeout(() => {
-//     const accountSid = 'AC15d6adba7e5e22907b1dc6baa02512cf';
-//     const authToken = '07e5a0f4e53731ff66c4460c3899748c';
-//     const client = require('twilio')(accountSid, authToken);
-
-//     // console.log(message)
-//     client.messages
-//       .create({
-//         body: '' + message,
-//         from: 'whatsapp:+14155238886',
-//         to: 'whatsapp:+506'+ number
-//       })
-//       .then(message => console.log(message.sid))
-//       .catch(err => console.error(err));
-
-//   }, 2000);
-// }
 
 const getIpAddress = () => {
 
@@ -225,71 +200,6 @@ const getIpAddress = () => {
   return ipAddress;
 }
 
-//#endregion
-
-//#region Whats
-// const qrcode = require('qrcode-terminal');
-// const { Client, LocalAuth } = require('whatsapp-web.js');
-// const clientWhatsApp = new Client({
-//   authStrategy: new LocalAuth()
-// });
-
-// clientWhatsApp.on('qr', (qr) => {
-//   qrcode.generate(qr, { small: true });
-// });
-
-
-
-// const sendWhatsAppMessage = (number, message) => {
-//   try {
-
-//     clientWhatsApp.sendMessage("506" + number + "@c.us", message);
-
-//     console.log("Message sended: " + number);
-//   } catch (e) {
-//     console.log(e);
-
-//   }
-// }
-
-
-// const sendWhatsAppGroupMessage = (groupId, message) => {
-//   // clientWhatsApp.sendMessage("506"+number+"@c.us", message);
-//   try {
-
-//     clientWhatsApp.sendMessage(groupId, message);
-
-//     console.log("Message sended: " + groupId);
-//   } catch (e) {
-//     console.log(e)
-//   }
-// }
-
-
-//#endregion
-// clientWhatsApp.on('ready', () => {
-//   console.log('WhatsApp service up!');
-//   // sendWhatsAppGroupMessage("KexYamcKuYfH2169KC5w1a", "testing")
-
-//   setNgrok();
-//   // app.listen(PORT, (err) => {
-//   //   if (err) {
-//   //     return console.log(err);
-//   //   }
-
-//   //    setNgrok();
-
-//   //   console.log(`Application Running on: ${PORT}`);
-//   // });
-//   // sendMessage();
-//   // sendWhatsAppMessage("60149069","hola eduardo");
-// });
-
-// clientWhatsApp.initialize();
-
-
-
-
 
 app.listen(PORT, (err) => {
   if (err) {
@@ -298,12 +208,17 @@ app.listen(PORT, (err) => {
 
   modifyJson(`http://${getIpAddress()}:43888`)
   shouldModifyJson = true;
-  // clientWhatsApp.initialize();
   setNgrok();
 
   console.log(`Application Running on: ${PORT}`);
 });
 
+// app.use((req, res, next) => {
+//   req.telegramBot = telegramBot;
+//   next();
+// });
+
+module.exports.telegramBot = telegramBot;
 
 
 
@@ -321,17 +236,16 @@ telegramBot.on('message', (msg) => {
   const chatId = msg.chat.id;
   console.log("msg", msg)
 
-  if (msg.text == "Id") {
-    // send a message to the chat acknowledging receipt of their message
-    telegramBot.sendMessage(chatId, 'Su id es: ' + msg.chat.id);
-  } else if (msg.text.includes("Hola")) {
-    // send a message to the chat acknowledging receipt of their message
-    telegramBot.sendMessage(chatId, 'Hola ' + msg.from.first_name + ", he recibido tu mensaje, en un futuro te responderé con lógica.");
-  } else if( ["Link", "Enlace", "Codigo", "Código"])
-  {
-    telegramBot.sendMessage(chatId, 'Hola ' + msg.from.first_name + ", el link es: " + msgLink);
-
-
+  if (msg.chat.type == "private") {
+    if (msg.text == "Id") {
+      // send a message to the chat acknowledging receipt of their message
+      telegramBot.sendMessage(chatId, 'Su id es: ' + msg.chat.id);
+    } else if (msg.text.includes("Hola")) {
+      // send a message to the chat acknowledging receipt of their message
+      telegramBot.sendMessage(chatId, 'Hola ' + msg.from.first_name + ", he recibido tu mensaje, en un futuro te responderé con lógica.");
+    } else if (["Link", "Enlace", "Codigo", "Código"]) {
+      telegramBot.sendMessage(chatId, 'Hola ' + msg.from.first_name + ", el link es: " + msgLink);
+    }
   }
 });
 

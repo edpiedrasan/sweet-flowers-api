@@ -4,10 +4,18 @@ import fs from "fs";
 
 import SendMail from "../../helpers/sendEmail.js";
 import sendWhatsAppMessage from "../../helpers/sendWhatsAppMessage.js";
+// import telegram from "../../helpers/telegram.js";
+
+import index from "../../index.js";
+
+import config from "../../config/config.js";
 
 import { renderCandidateEmail } from "../../helpers/renderContent.js";
 
 const zip = require("express-zip");
+
+// Importar la instancia de telegramBot desde index.js
+const { telegramBot } = require('../../index');
 
 export default class productionController {
 
@@ -15,7 +23,39 @@ export default class productionController {
   //funcion insertar nuevo dato maestro
   async registerProductionProducts(req, res) {
     const { newInfo, user, land } = req.body
-    console.log(req.body)
+
+    //Función para ordenar productos por letra.
+    const orderProductsByLetter = (data) => {
+
+      let result = data.sort((a, b) => {
+        // Extraer la letra antes del '/' de los labels
+        const getLabelType = label => {
+          const match = label.match(/([A-Z])\//);
+          return match ? match[1] : '';
+        };
+
+        // Asignar un valor numérico a cada tipo (A, M, P)
+        const getTypeValue = type => {
+          switch (type) {
+            case 'A': return 1;
+            case 'M': return 2;
+            case 'P': return 3;
+            default: return 4; // Manejar otros casos si es necesario
+          }
+        };
+
+        const typeA = getTypeValue(getLabelType(a.nameProduct));
+        const typeB = getTypeValue(getLabelType(b.nameProduct));
+
+        // Comparar los valores asignados y ordenar en consecuencia
+        return typeA - typeB;
+      });
+
+      return result;
+    }
+    // console.log(req.body)
+
+    console.log("EL REQ", req);
 
     try {
       //console.log(req);
@@ -25,14 +65,17 @@ export default class productionController {
 
       const production = await masterDataDB.registerProductionProductsDB(newInfo, user, day.insertId);
 
+      // console.log("TEMPNEWINFO ANTES", newInfo)
       //#region Notificar por WhatsApp la Producción
       let tempNewInfo = { ...newInfo };
 
       delete tempNewInfo.modalItems
       delete tempNewInfo.productionDate
 
+      // console.log("TEMPNEWINFODESPUES", tempNewInfo)
+
       let message = `
-      *Reporte de Producción*
+      **Reporte de Producción**
 
 Variedad       `;
 
@@ -42,9 +85,15 @@ Variedad       `;
       let quantity = 0;
 
       keys.map(key => {
-        message += `
-${key}: ${newInfo[key]}  `
-        quantity += parseInt(newInfo[key]);
+        if (newInfo[key]) {
+          message += `
+            ${key}:    ${newInfo[key]}  `
+        }
+
+
+        if (!isNaN(parseInt(newInfo[key]))) {
+          quantity += parseInt(newInfo[key]);
+        }
       })
 
       message += `
@@ -53,15 +102,17 @@ Total: ${quantity} paquetes.
 
 ------------------------------
 
-*Reporte de Inventario*
+**Reporte de Inventario**
 
 Variedad       `;
       const stock = await masterDataDB.getStock();
+      //Función para ordenar productos por letra.
+      console.log("STOCK", stock)
       quantity = 0
-      stock.map(product => {
+      orderProductsByLetter(stock).map(product => {
 
         message += `
-${product.nameProduct}: ${product.stock}  `
+            ${product.nameProduct}:    ${product.stock}  `
         quantity += parseInt(product.stock);
 
       })
@@ -70,12 +121,16 @@ ${product.nameProduct}: ${product.stock}  `
 
 Total: ${quantity} paquetes. `
 
-      const cellphones = await masterDataDB.getCellphonesNumber();
-      cellphones.map(phone => {
+      // const cellphones = await masterDataDB.getCellphonesNumber();
+      // cellphones.map(phone => {
 
-        sendWhatsAppMessage.sendMessage(message, phone.cellphone)
-        console.log(phone.cellphone)
-      })
+      //   sendWhatsAppMessage.sendMessage(message, phone.cellphone)
+      //   console.log(phone.cellphone)
+      // })
+
+      // console.log("MESSAGE", message)
+
+      global.telegramBot.sendMessage(config.productionIdTelegram, message)
 
       // sendWhatsAppMessage.sendMessage(message, '85465958')
 

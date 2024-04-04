@@ -127,7 +127,46 @@ export default class billingDB {
         } catch (e) { console.log(e) }
     }
 
-    //Inserta ela purchase order
+    //Realiza el rebajo del stock despues de una solicitud de rechazo
+    static updateDeleteOrderStockDB(newInfo) {
+
+
+        let query = ""
+
+        try {
+            // query = `SELECT * FROM employee`;
+
+            newInfo.modalItems.map(product => {
+                query += `UPDATE product SET stock= product.stock-${product.quantity} WHERE idProduct = '${product.product.value}'; 
+                    
+                    `
+            })
+
+            //Actualiza el estado a completado
+            // query = `UPDATE purchaseorder SET status='1' WHERE purchaseorder.idPurchaseOrder=${newInfo.purchaseorder.value}; `;
+
+            console.log(query);
+
+            return new Promise((resolve, reject) => {
+                try {
+                    connectionSF.query(query, (error, results) => {
+                        if (error) {
+                            reject(error)
+                        } else {
+                            resolve(results)
+                        }
+                    })
+                } catch (error) {
+                    console.log(error);
+                    reject(error)
+                }
+            })
+
+            //}
+        } catch (e) { console.log(e) }
+    }
+
+    //Realiza el rebajo del stock en base a orden de compra
     static updateStockDB(newInfo) {
 
 
@@ -137,10 +176,7 @@ export default class billingDB {
             // query = `SELECT * FROM employee`;
 
             newInfo.modalItems.map(product => {
-
-                query += `UPDATE product SET stock= product.stock-${product.quantity} WHERE idProduct = '${product.product.value}'; 
-                    
-                    `
+                query += `UPDATE product SET stock= product.stock-${product.quantity} WHERE nameProduct LIKE '${product.product.label}'; `
             })
 
             //Actualiza el estado a completado

@@ -84,7 +84,7 @@ export default class billingController {
 
       const DOs = await billingDB.newDeleteOrderDB(newInfo, user, total);
       const items = await billingDB.newItemsDeleteOrderDB(newInfo, user, DOs.insertId);
-      const updateStock = await billingDB.updateStockDB(newInfo);
+      const updateStock = await billingDB.updateDeleteOrderStockDB(newInfo);
 
 
 
