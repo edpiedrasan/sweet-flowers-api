@@ -2,7 +2,7 @@
 
 ![version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 
-API construido en express para el desarrollo de todos los endpoints necesarios utilizados por el sitio WEB Smart & Simple
+API construido en express para el desarrollo de todos los endpoints necesarios utilizados por el sitio WEB Sweet Flowers
 
 ## Tabla de Contenidos
 
@@ -14,7 +14,7 @@ API construido en express para el desarrollo de todos los endpoints necesarios u
   - [Rutas disponibles](#rutas-disponibles)
   - [Comandos disponibles](#comandos-disponibles)
 - [Autores](#autores)
-- [Licencia](#licencia)
+
 
 
 ## Prerequisitos
@@ -79,10 +79,6 @@ Necesitas instalar un editor de código [VSCode](https://code.visualstudio.com/d
 
 ## Autores ✒️
 
-* **Freddy Villalobos González** - *Software Development* - [fvillalobos94](https://gitlab.com/fvillalobos94)
-* **Luis Diego Navarro Masís** - *Software Development* - [diegonm123](https://gitlab.com/diegonm123)
-* **Jose Juan Jaen Small** - *Software Development* - [josejuan24121](https://gitlab.com/josejuan24121)
+* **Eduardo Piedra Sanabria** - *Software Development* - [edpiedrasan](https://github.com/edpiedrasan/)
 
-## Licencia 📄
 
-Este proyecto está bajo la Licencia [MIT](https://choosealicense.com/licenses/mit/)
