@@ -109,7 +109,7 @@ export default class masterDataDB {
 
             if(form =="supplier")
             {
-                query=`INSERT INTO provider (idProvider, providerName, enterpriseNumber, createdBy, updatedAt, updatedBy, createdAt) VALUES (NULL, '${newInfo.enterpriseName}', '${newInfo.enterpriseNumber != undefined ? newInfo.enterpriseNumber : ''}', '${user}', NULL, NULL, CURRENT_TIMESTAMP)`;
+                query=`INSERT INTO provider (id, name, enterpriseNumber, createdBy, updatedAt, updatedBy, createdAt, active) VALUES (NULL, '${newInfo.enterpriseName}', '${newInfo.enterpriseNumber != undefined ? newInfo.enterpriseNumber : ''}', '${user}', NULL, NULL, CURRENT_TIMESTAMP, '1')`;
             }
 
 
