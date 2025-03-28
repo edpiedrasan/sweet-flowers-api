@@ -11,9 +11,9 @@ const { PORT, telegramBotToken, linkIdTelegram } = config;
 const telegramInstance = require('node-telegram-bot-api');
 
 // Create a bot that uses 'polling' to fetch new updates
-// const telegramBot = new telegramInstance(telegramBotToken, { polling: true });
+const telegramBot = new telegramInstance(telegramBotToken, { polling: true });
 
-// global.telegramBot = telegramBot
+global.telegramBot = telegramBot
 
 //#region Ngrok 
 const express = require('express');
@@ -91,7 +91,7 @@ const getNgrokTunnels = () => {
         console.log("Api: ", apiRoute);
 
         // send a message to the chat acknowledging receipt of their message
-        // telegramBot.sendMessage(linkIdTelegram, 'Exterior: ' + frontRoute + '. Interior: ' + frontLocal);
+        telegramBot.sendMessage(linkIdTelegram, 'Exterior: ' + frontRoute + '. Interior: ' + frontLocal);
 
         msgLink = 'Exterior: ' + frontRoute + '. Interior: ' + frontLocal;
 
@@ -116,7 +116,7 @@ let shouldModifyJson = true; // Bandera para controlar si se debe modificar el J
 // Función para modificar el archivo JSON
 const modifyJson = (route) => {
 
-  if (shouldModifyJson) {
+  if (shouldModifyJson && false) {
     // Leer el archivo JSON
     fs.readFile(filePathNgrok, 'utf8', (err, data) => {
       if (err) {
@@ -179,25 +179,6 @@ const setNgrok = () => {
 
 
 const getIpAddress = () => {
-
-  const os = require('os');
-
-  // Obtiene todas las interfaces de red
-  const interfaces = os.networkInterfaces();
-
-  // Itera sobre cada interfaz para encontrar la dirección IP no interna (no 127.0.0.1)
-  let ipAddress = '';
-  Object.keys(interfaces).forEach((iface) => {
-    interfaces[iface].forEach((ifaceDetail) => {
-      if (ifaceDetail.family === 'IPv4' && !ifaceDetail.internal) {
-        ipAddress = ifaceDetail.address;
-      }
-    });
-  });
-
-  console.log("ipAddress", ipAddress);
-
-  return ipAddress;
 }
 
 
@@ -206,9 +187,9 @@ app.listen(PORT, (err) => {
     return console.log(err);
   }
 
-  // modifyJson(`http://${getIpAddress()}:43888`)
-  // shouldModifyJson = true;
-  // setNgrok();
+  modifyJson(`http://${getIpAddress()}:43888`)
+  shouldModifyJson = true;
+  setNgrok();
 
   console.log(`Application Running on: ${PORT}`);
 });
@@ -218,7 +199,7 @@ app.listen(PORT, (err) => {
 //   next();
 // });
 
-// module.exports.telegramBot = telegramBot;
+module.exports.telegramBot = telegramBot;
 
 
 
@@ -232,25 +213,19 @@ app.listen(PORT, (err) => {
 
 
 //Escuchando el chat de telegram.
-// telegramBot.on('message', (msg) => {
-//   const chatId = msg.chat.id;
-//   console.log("msg", msg)
+telegramBot.on('message', (msg) => {
+  const chatId = msg.chat.id;
+  console.log("msg", msg)
 
-//   if (msg.chat.type == "private") {
-//     if (msg.text == "Id") {
-//       // send a message to the chat acknowledging receipt of their message
-//       telegramBot.sendMessage(chatId, 'Su id es: ' + msg.chat.id);
-//     } else if (msg.text.includes("Hola")) {
-//       // send a message to the chat acknowledging receipt of their message
-//       telegramBot.sendMessage(chatId, 'Hola ' + msg.from.first_name + ", he recibido tu mensaje, en un futuro te responderé con lógica.");
-//     } else if (["Link", "Enlace", "Codigo", "Código"]) {
-//       telegramBot.sendMessage(chatId, 'Hola ' + msg.from.first_name + ", el link es: " + msgLink);
-//     }
-//   }
-// });
-
-
-
-
-
-
+  if (msg.chat.type == "private") {
+    if (msg.text == "Id") {
+      // send a message to the chat acknowledging receipt of their message
+      telegramBot.sendMessage(chatId, 'Su id es: ' + msg.chat.id);
+    } else if (msg.text.includes("Hola")) {
+      // send a message to the chat acknowledging receipt of their message
+      telegramBot.sendMessage(chatId, 'Hola ' + msg.from.first_name + ", he recibido tu mensaje, en un futuro te responderé con lógica.");
+    } else if (["Link", "Enlace", "Codigo", "Código"]) {
+      telegramBot.sendMessage(chatId, 'Hola ' + msg.from.first_name + ", el link es: " + msgLink);
+    }
+  }
+});
