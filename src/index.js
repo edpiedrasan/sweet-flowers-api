@@ -116,7 +116,7 @@ let shouldModifyJson = true; // Bandera para controlar si se debe modificar el J
 // Función para modificar el archivo JSON
 const modifyJson = (route) => {
 
-  if (shouldModifyJson && false) {
+  if (shouldModifyJson ) {
     // Leer el archivo JSON
     fs.readFile(filePathNgrok, 'utf8', (err, data) => {
       if (err) {
@@ -179,6 +179,25 @@ const setNgrok = () => {
 
 
 const getIpAddress = () => {
+
+  const os = require('os');
+ 
+  // Obtiene todas las interfaces de red
+  const interfaces = os.networkInterfaces();
+
+  // Itera sobre cada interfaz para encontrar la dirección IP no interna (no 127.0.0.1)
+  let ipAddress = '';
+  Object.keys(interfaces).forEach((iface) => {
+    interfaces[iface].forEach((ifaceDetail) => {
+      if (ifaceDetail.family === 'IPv4' && !ifaceDetail.internal) {
+        ipAddress = ifaceDetail.address;
+      }
+    });
+  });
+
+  console.log("ipAddress", ipAddress);
+
+  return ipAddress;
 }
 
 
