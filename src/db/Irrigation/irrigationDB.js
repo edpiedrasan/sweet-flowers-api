@@ -150,8 +150,8 @@ export default class irrigationDB {
   }
 
   static insertLog(data) {
-    const query = `INSERT INTO irrigation_logs (schedule_id, gpio_id, gpio_label, action, cancelled_by, message, scheduled_time)
-                   VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    const query = `INSERT INTO irrigation_logs (schedule_id, gpio_id, gpio_label, action, cancelled_by, message, scheduled_time, created_by)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
     const params = [
       data.schedule_id || null,
       data.gpio_id,
@@ -159,7 +159,8 @@ export default class irrigationDB {
       data.action,
       data.cancelled_by || null,
       data.message || null,
-      data.scheduled_time || null
+      data.scheduled_time || null,
+      data.created_by || null
     ];
     return new Promise((resolve, reject) => {
       try {
