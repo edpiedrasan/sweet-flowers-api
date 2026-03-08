@@ -14,31 +14,23 @@ import config from "../config/config";
 //   }
 // );
 
-export const connectionAuth = mysql.createConnection(
-  {
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'mydb'
-  },
-  {
-    multipleStatements: true,
-  }
-);
+export const connectionAuth = mysql.createPool({
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  database: 'mydb',
+  multipleStatements: true,
+  connectionLimit: 5,
+});
 
-export const connectionSF = mysql.createConnection(
-  {
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'mydb',
-    multipleStatements: true
-
-  },
-  {
-    multipleStatements: true,
-  }
-);
+export const connectionSF = mysql.createPool({
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  database: 'mydb',
+  multipleStatements: true,
+  connectionLimit: 5,
+});
 
 export const connectionMis = mysql.createConnection(
   {
@@ -354,15 +346,12 @@ export const DataBotSSConnection = mysql.createConnection(
   }
 );
 
-export const IRRConnection = mysql.createConnection(
-  {
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: "irrigation_db",
-  },
-  {
-    multipleStatements: true,
-  }
-);
+export const IRRConnection = mysql.createPool({
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  database: "irrigation_db",
+  multipleStatements: true,
+  connectionLimit: 5,
+});
 

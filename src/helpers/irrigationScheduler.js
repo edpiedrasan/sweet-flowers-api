@@ -5,6 +5,7 @@ import fetch from "node-fetch";
 const cron = require("node-cron");
 const DATAPLICITY_URL = "https://polemic-quetzal-1242.dataplicity.io";
 const CANCEL_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+const NOTIFY_AHEAD_MIN = 5; // notify 5 minutes before
 
 // Active pending irrigations: Map<scheduleId, { timeout, cancelled, gpioId, gpioLabel }>
 const pendingIrrigations = new Map();
@@ -12,10 +13,20 @@ const pendingIrrigations = new Map();
 // Active running irrigations: Map<scheduleId, { timeout, gpioId }>
 const runningIrrigations = new Map();
 
+// Track which schedules were already processed today: Set<"scheduleId-HH:MM">
+const processedToday = new Set();
+
 const formatTime = (hour, minute) => {
   const h = String(hour).padStart(2, "0");
   const m = String(minute).padStart(2, "0");
   return `${h}:${m}`;
+};
+
+// Reset processed set at midnight
+const resetProcessedAtMidnight = () => {
+  cron.schedule("0 0 * * *", () => {
+    processedToday.clear();
+  });
 };
 
 const turnGpioOn = async (gpioId) => {
@@ -39,7 +50,7 @@ const turnGpioOff = async (gpioId) => {
 const sendTelegramMessage = (message) => {
   try {
     if (global.telegramBot && config.irrigationIdTelegram) {
-      global.telegramBot.sendMessage(config.irrigationIdTelegram, message);
+      global.telegramBot.sendMessage(config.irrigationIdTelegram, message, { parse_mode: "HTML" });
     }
   } catch (error) {
     console.log("Error enviando mensaje Telegram de riego:", error);
@@ -54,7 +65,10 @@ const startIrrigation = async (schedule) => {
     await turnGpioOn(gpio_id);
 
     sendTelegramMessage(
-      `✅ Riego iniciado: ${gpio_label} (Salida ${gpio_id}) a las ${timeStr} por ${duration_minutes} min.`
+      `🌹 <b>Riego iniciado</b>\n\n` +
+      `💧 <b>${gpio_label}</b> (Salida ${gpio_id})\n` +
+      `⏱ Duración: ${duration_minutes} minutos\n\n` +
+      `Se apagará automáticamente al finalizar.`
     );
 
     await irrigationDB.insertLog({
@@ -74,7 +88,10 @@ const startIrrigation = async (schedule) => {
         const endTimeStr = formatTime(now.getHours(), now.getMinutes());
 
         sendTelegramMessage(
-          `🏁 Riego finalizado con éxito: ${gpio_label} (Salida ${gpio_id}) a las ${endTimeStr}.`
+          `✅ <b>Riego finalizado</b>\n\n` +
+          `🌹 <b>${gpio_label}</b> (Salida ${gpio_id})\n` +
+          `⏱ Finalizó a las ${endTimeStr}\n\n` +
+          `¡Tus rosas están felices! 🌿`
         );
 
         await irrigationDB.insertLog({
@@ -88,7 +105,7 @@ const startIrrigation = async (schedule) => {
       } catch (error) {
         console.log("Error al apagar GPIO:", error);
         sendTelegramMessage(
-          `❌ Error al apagar ${gpio_label} (Salida ${gpio_id}): ${error.message}`
+          `❌ <b>Error al apagar</b>\n${gpio_label} (Salida ${gpio_id}): ${error.message}`
         );
         await irrigationDB.insertLog({
           schedule_id: id,
@@ -105,7 +122,7 @@ const startIrrigation = async (schedule) => {
   } catch (error) {
     console.log("Error al iniciar riego:", error);
     sendTelegramMessage(
-      `❌ Error al iniciar riego ${gpio_label} (Salida ${gpio_id}): ${error.message}`
+      `❌ <b>Error al iniciar riego</b>\n${gpio_label} (Salida ${gpio_id}): ${error.message}`
     );
     await irrigationDB.insertLog({
       schedule_id: id,
@@ -127,7 +144,10 @@ const scheduleIrrigation = (schedule) => {
   }
 
   sendTelegramMessage(
-    `🔔 Voy a encender ${gpio_label} (Salida ${gpio_id}) a las ${timeStr} por ${duration_minutes} min.\nEnvíe "cancelar ${id}" o "x ${id}" para cancelar. Tiene 5 minutos.`
+    `🔔 <b>Riego programado</b>\n\n` +
+    `🌹 <b>${gpio_label}</b> (Salida ${gpio_id})\n` +
+    `🕐 Se encenderá a las <b>${timeStr}</b> por ${duration_minutes} min\n\n` +
+    `Si deseas cancelar, responde <b>"cancelar"</b> en los próximos 5 minutos.`
   );
 
   irrigationDB.insertLog({
@@ -165,29 +185,29 @@ const handleCancelMessage = (msg) => {
 
   const text = (msg.text || "").trim().toLowerCase();
 
-  // Match "cancelar <id>" or "x <id>" or just "cancelar"/"x" (cancels all pending)
-  let scheduleIdToCancel = null;
-
-  const cancelMatch = text.match(/^(?:cancelar|x)\s+(\d+)$/);
-  const cancelAllMatch = text.match(/^(?:cancelar|x)$/);
-
-  if (cancelMatch) {
-    scheduleIdToCancel = parseInt(cancelMatch[1]);
-  }
+  // Match "cancelar" or "x" — cancels all pending irrigations
+  if (text !== "cancelar" && text !== "x") return;
 
   const cancellerName = msg.from ? `${msg.from.first_name || ""} ${msg.from.last_name || ""}`.trim() : "Desconocido";
 
-  if (cancelMatch && scheduleIdToCancel) {
-    const pending = pendingIrrigations.get(scheduleIdToCancel);
-    if (pending && !pending.cancelled) {
+  if (pendingIrrigations.size === 0) {
+    sendTelegramMessage(`ℹ️ No hay riegos pendientes para cancelar en este momento.`);
+    return;
+  }
+
+  for (const [schedId, pending] of pendingIrrigations) {
+    if (!pending.cancelled) {
       pending.cancelled = true;
       clearTimeout(pending.timeout);
-      pendingIrrigations.delete(scheduleIdToCancel);
 
-      sendTelegramMessage(`🚫 Riego cancelado por ${cancellerName}: ${pending.gpioLabel} (Salida ${pending.gpioId})`);
+      sendTelegramMessage(
+        `🚫 <b>Riego cancelado</b>\n\n` +
+        `🌹 ${pending.gpioLabel} (Salida ${pending.gpioId})\n` +
+        `👤 Cancelado por <b>${cancellerName}</b>`
+      );
 
       irrigationDB.insertLog({
-        schedule_id: scheduleIdToCancel,
+        schedule_id: schedId,
         gpio_id: pending.gpioId,
         gpio_label: pending.gpioLabel,
         action: "CANCELLED",
@@ -195,29 +215,8 @@ const handleCancelMessage = (msg) => {
         message: `Riego cancelado por ${cancellerName}`,
       });
     }
-  } else if (cancelAllMatch) {
-    // Cancel all pending irrigations
-    if (pendingIrrigations.size === 0) return;
-
-    for (const [schedId, pending] of pendingIrrigations) {
-      if (!pending.cancelled) {
-        pending.cancelled = true;
-        clearTimeout(pending.timeout);
-
-        sendTelegramMessage(`🚫 Riego cancelado por ${cancellerName}: ${pending.gpioLabel} (Salida ${pending.gpioId})`);
-
-        irrigationDB.insertLog({
-          schedule_id: schedId,
-          gpio_id: pending.gpioId,
-          gpio_label: pending.gpioLabel,
-          action: "CANCELLED",
-          cancelled_by: cancellerName,
-          message: `Riego cancelado por ${cancellerName}`,
-        });
-      }
-    }
-    pendingIrrigations.clear();
   }
+  pendingIrrigations.clear();
 };
 
 export const startIrrigationScheduler = () => {
@@ -228,22 +227,44 @@ export const startIrrigationScheduler = () => {
     global.telegramBot.on("message", handleCancelMessage);
   }
 
-  // Check every minute for schedules to execute in 5 minutes
+  resetProcessedAtMidnight();
+
+  // Check every minute
   cron.schedule("* * * * *", async () => {
     try {
       const now = new Date();
-      const day = now.getDay(); // 0=Sunday
-
-      // Get the time 5 minutes from now
-      const targetTime = new Date(now.getTime() + CANCEL_WINDOW_MS);
-      const targetHour = targetTime.getHours();
-      const targetMinute = targetTime.getMinutes();
+      const day = now.getDay();
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
       const schedules = await irrigationDB.getEnabledSchedulesByDay(day);
 
       for (const schedule of schedules) {
-        if (schedule.time_hour === targetHour && schedule.time_minute === targetMinute) {
+        const schedMin = schedule.time_hour * 60 + schedule.time_minute;
+        const schedKey = `${schedule.id}-${schedule.time_hour}-${schedule.time_minute}`;
+
+        // Already processed, pending, or running? Skip
+        if (processedToday.has(schedKey) || pendingIrrigations.has(schedule.id) || runningIrrigations.has(schedule.id)) {
+          continue;
+        }
+
+        const diff = schedMin - nowMinutes;
+
+        // 5 minutes before: send notification with cancel window
+        if (diff === NOTIFY_AHEAD_MIN) {
+          processedToday.add(schedKey);
           scheduleIrrigation(schedule);
+        }
+        // Exact time or just passed (within 1 min): fallback, start immediately
+        // This catches schedules created after the 5-min window passed
+        else if (diff === 0) {
+          processedToday.add(schedKey);
+          sendTelegramMessage(
+            `⚡ <b>Riego inmediato</b>\n\n` +
+            `🌹 <b>${schedule.gpio_label}</b> (Salida ${schedule.gpio_id})\n` +
+            `⏱ Duración: ${schedule.duration_minutes} minutos\n\n` +
+            `Iniciando ahora (se pasó la ventana de aviso previo).`
+          );
+          startIrrigation(schedule);
         }
       }
     } catch (error) {
