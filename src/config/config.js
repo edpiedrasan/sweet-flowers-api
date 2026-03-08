@@ -8,6 +8,7 @@ let enviroment="PRD"
 export default {
   linkIdTelegram: enviroment =="PRD"? "-1001999863194" : "-4158372715",
   productionIdTelegram: enviroment =="PRD"? "-4182382073" : "-4141486048",
+  irrigationIdTelegram: process.env.IRRIGATION_TELEGRAM_ID || "-4158372715",
   
   telegramBotToken: "6787040655:AAHRoafV_OqhLlk8zwyFBDP_hwQqwifAN6k",
   // APP: process.env.APP || "PRD",

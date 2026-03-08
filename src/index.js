@@ -2,6 +2,7 @@
 import { url } from "inspector";
 import app from "./app";
 import config from "./config/config";
+import { startIrrigationScheduler } from "./helpers/irrigationScheduler";
 // import telegramBot from "./helpers/telegram";
 import { CLIENT_RENEG_LIMIT } from "tls";
 const https = require("https");
@@ -211,6 +212,9 @@ app.listen(PORT, (err) => {
   setNgrok();
 
   console.log(`Application Running on: ${PORT}`);
+
+  // Start irrigation scheduler
+  startIrrigationScheduler();
 });
 
 // app.use((req, res, next) => {

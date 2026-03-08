@@ -36,6 +36,7 @@ import Autopp from "./AutoppLdrs/autoppLdrs.routes";
 import MasterData from "./MasterData/masterData.routes";
 import Production from "./Production/production.routes";
 import Billing from "./Billing/billing.routes";
+import Irrigation from "./Irrigation/irrigation.routes";
 
 
 
@@ -111,6 +112,9 @@ router.use("/production", Production);
 
 //Billing
 router.use("/billing", Billing);
+
+//Irrigation
+router.use("/irrigation", Irrigation);
 
 
 
