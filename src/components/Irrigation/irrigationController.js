@@ -51,7 +51,7 @@ export default class irrigationController {
 
   async createSchedule(req, res) {
     try {
-      const data = { ...req.body, created_by: req.decoded || null };
+      const data = { ...req.body, created_by: req.decoded ? req.decoded.user : null };
       const result = await irrigationDB.createSchedule(data);
       return res.status(200).send({
         status: 200,
@@ -188,7 +188,7 @@ export default class irrigationController {
         gpio_label: gpio_label || `Salida ${id}`,
         action,
         message: `Toggle manual: ${turn === 1 ? 'Encendido' : 'Apagado'}`,
-        created_by: req.decoded || null,
+        created_by: req.decoded ? req.decoded.user : null,
       });
 
       return res.status(200).send({
