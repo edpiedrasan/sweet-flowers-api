@@ -130,8 +130,8 @@ export default class irrigationController {
 
   async getLogs(req, res) {
     try {
-      const limit = parseInt(req.query.limit) || 50;
-      const offset = parseInt(req.query.offset) || 0;
+      const limit = parseInt(req.body.limit || req.query.limit) || 50;
+      const offset = parseInt(req.body.offset || req.query.offset) || 0;
       const rows = await irrigationDB.getLogs(limit, offset);
       return res.status(200).send({
         status: 200,
