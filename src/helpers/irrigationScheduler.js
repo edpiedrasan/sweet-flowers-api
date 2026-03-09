@@ -203,7 +203,7 @@ const handleCancelMessage = (msg) => {
       sendTelegramMessage(
         `🚫 <b>Riego cancelado</b>\n\n` +
         `🌹 ${pending.gpioLabel} (Salida ${pending.gpioId})\n` +
-        `👤 Cancelado por <b>${cancellerName}</b>`
+        `👤 <b>${cancellerName}</b> canceló el riego programado.`
       );
 
       irrigationDB.insertLog({

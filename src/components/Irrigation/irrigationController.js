@@ -1,7 +1,18 @@
 import irrigationDB from "../../db/Irrigation/irrigationDB.js";
+import config from "../../config/config";
 import fetch from "node-fetch";
 
 const DATAPLICITY_URL = "https://polemic-quetzal-1242.dataplicity.io";
+
+const sendTelegramMessage = (message) => {
+  try {
+    if (global.telegramBot && config.irrigationIdTelegram) {
+      global.telegramBot.sendMessage(config.irrigationIdTelegram, message, { parse_mode: "HTML" });
+    }
+  } catch (error) {
+    console.log("Error enviando mensaje Telegram:", error);
+  }
+};
 
 export default class irrigationController {
 
@@ -182,14 +193,32 @@ export default class irrigationController {
       if (!response.ok) throw new Error("Error al cambiar estado GPIO");
 
       const action = turn === 1 ? "MANUAL_ON" : "MANUAL_OFF";
+      const userName = req.decoded ? req.decoded.user : "Desconocido";
+      const label = gpio_label || `Salida ${id}`;
+
       await irrigationDB.insertLog({
         schedule_id: null,
         gpio_id: id,
-        gpio_label: gpio_label || `Salida ${id}`,
+        gpio_label: label,
         action,
         message: `Toggle manual: ${turn === 1 ? 'Encendido' : 'Apagado'}`,
-        created_by: req.decoded ? req.decoded.user : null,
+        created_by: userName,
       });
+
+      if (turn === 1) {
+        sendTelegramMessage(
+          `⚡ <b>Encendido manual</b>\n\n` +
+          `💧 <b>${label}</b> (Salida ${id})\n` +
+          `👤 Encendido por <b>${userName}</b>\n\n` +
+          `⚠️ Recuerda apagarlo manualmente.`
+        );
+      } else {
+        sendTelegramMessage(
+          `🔴 <b>Apagado manual</b>\n\n` +
+          `💧 <b>${label}</b> (Salida ${id})\n` +
+          `👤 Apagado por <b>${userName}</b>`
+        );
+      }
 
       return res.status(200).send({
         status: 200,
