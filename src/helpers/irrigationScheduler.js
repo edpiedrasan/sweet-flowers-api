@@ -3,9 +3,12 @@ import config from "../config/config";
 import fetch from "node-fetch";
 
 const cron = require("node-cron");
+const AbortController = globalThis.AbortController || require("abort-controller");
 const DATAPLICITY_URL = "https://polemic-quetzal-1242.dataplicity.io";
 const CANCEL_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
 const NOTIFY_AHEAD_MIN = 5; // notify 5 minutes before
+const FETCH_TIMEOUT_MS = 15000; // 15 seconds timeout for Raspberry Pi calls
+const VERIFY_DELAY_MS = 2000; // 2 seconds wait before verifying GPIO state
 
 // Active pending irrigations: Map<scheduleId, { timeout, cancelled, gpioId, gpioLabel }>
 const pendingIrrigations = new Map();
@@ -29,22 +32,71 @@ const resetProcessedAtMidnight = () => {
   });
 };
 
+const fetchWithTimeout = async (url, options = {}) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    return response;
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new Error(`Timeout: Raspberry Pi no respondió en ${FETCH_TIMEOUT_MS / 1000}s — posiblemente desconectado`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const getGpioStatus = async () => {
+  const response = await fetchWithTimeout(`${DATAPLICITY_URL}/gpio`);
+  if (!response.ok) throw new Error("No se pudo obtener el estado de los GPIOs del Raspberry Pi");
+  return response.json();
+};
+
+const verifyGpioState = async (gpioId, expectedState) => {
+  await delay(VERIFY_DELAY_MS);
+  const gpioData = await getGpioStatus();
+  if (!Array.isArray(gpioData) || gpioData.length === 0) {
+    throw new Error(`Raspberry Pi no devolvió datos de GPIO — posiblemente desconectado`);
+  }
+  // GPIO data format: each entry is [id, label, state] array
+  const pin = gpioData.find((p) => Array.isArray(p) ? String(p[0]) === String(gpioId) : String(p.id) === String(gpioId));
+  if (!pin) throw new Error(`GPIO ${gpioId} no encontrado en la respuesta del Raspberry Pi — posiblemente desconectado`);
+  const currentState = Array.isArray(pin) ? pin[2] : pin.state;
+  const isOn = currentState === 1 || currentState === true || currentState === "1";
+  if (expectedState === 1 && !isOn) {
+    throw new Error(`GPIO ${gpioId} no se encendió realmente — Raspberry Pi puede estar desconectado o con fallo`);
+  }
+  if (expectedState === 0 && isOn) {
+    throw new Error(`GPIO ${gpioId} no se apagó realmente — Raspberry Pi puede estar desconectado o con fallo`);
+  }
+};
+
 const turnGpioOn = async (gpioId) => {
-  const response = await fetch(`${DATAPLICITY_URL}/gpio/${gpioId}`, {
+  const response = await fetchWithTimeout(`${DATAPLICITY_URL}/gpio/${gpioId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ turn: 1 }),
   });
   if (!response.ok) throw new Error(`Error al encender GPIO ${gpioId}`);
+  await verifyGpioState(gpioId, 1);
 };
 
 const turnGpioOff = async (gpioId) => {
-  const response = await fetch(`${DATAPLICITY_URL}/gpio/${gpioId}`, {
+  const response = await fetchWithTimeout(`${DATAPLICITY_URL}/gpio/${gpioId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ turn: 0 }),
   });
   if (!response.ok) throw new Error(`Error al apagar GPIO ${gpioId}`);
+  await verifyGpioOff(gpioId);
+};
+
+const verifyGpioOff = async (gpioId) => {
+  await verifyGpioState(gpioId, 0);
 };
 
 const sendTelegramMessage = (message) => {
